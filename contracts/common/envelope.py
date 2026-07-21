@@ -24,6 +24,7 @@ class ArtifactRefV1(BaseModel):
     ever stores the reference.
     """
 
+    artifact_id: str = Field(..., description="Unique ID for this artifact.")
     path: str = Field(
         ...,
         description="Content-addressed storage path/key for the artifact, "
@@ -40,6 +41,10 @@ class ArtifactRefV1(BaseModel):
         ...,
         description="MIME type of the stored artifact, e.g. 'video/mp4', "
         "'audio/wav', 'application/json'.",
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="UTC timestamp when this artifact reference was created.",
     )
 
     model_config = {
