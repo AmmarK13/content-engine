@@ -39,10 +39,3 @@ class ProductionManifestV1(BaseModel):
 
 
 
-if __name__ == "__main__":
-    manifest = ProductionManifestV1(
-        run_id="run_001",
-        idea_request_id="idea_001"
-    )
-
-    print(manifest.model_dump_json(indent=2))
