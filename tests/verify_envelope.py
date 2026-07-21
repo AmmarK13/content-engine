@@ -15,6 +15,7 @@ def fake_sha256(text: str) -> str:
 
 def main() -> None:
     artifact = ArtifactRefV1(
+        artifact_id="art_001",
         path="s3://avatar-harness-poc/artifacts/script_v1.json",
         hash=fake_sha256("Today we discuss AI."),
         mime_type="application/json",
@@ -35,6 +36,7 @@ def main() -> None:
         input_hash=fake_sha256("Today we discuss AI."),
         artifact_refs=[artifact],
         validation_ref=ArtifactRefV1(
+            artifact_id="art_002",
             path="s3://avatar-harness-poc/validation/s10_validation_report.json",
             hash=fake_sha256("validation-report-s10"),
             mime_type="application/json",

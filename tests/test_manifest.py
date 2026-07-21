@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -23,41 +23,61 @@ class TestArtifactRefV1:
     def test_construction(self):
         ref = ArtifactRefV1(
             artifact_id="art_001",
-            storage_path="s3://bucket/key",
-            sha256="a" * 64,
-            content_type="audio/mpeg",
+            path="s3://bucket/key",
+            hash="a" * 64,
+            mime_type="audio/mpeg",
         )
         assert ref.artifact_id == "art_001"
-        assert ref.storage_path == "s3://bucket/key"
-        assert ref.sha256 == "a" * 64
-        assert ref.content_type == "audio/mpeg"
+        assert ref.path == "s3://bucket/key"
+        assert ref.hash == "a" * 64
+        assert ref.mime_type == "audio/mpeg"
         assert isinstance(ref.created_at, datetime)
 
     def test_created_at_defaults_to_now(self):
-        before = datetime.utcnow()
+        before = datetime.now(timezone.utc)
         ref = ArtifactRefV1(
             artifact_id="art_001",
-            storage_path="s3://bucket/key",
-            sha256="a" * 64,
-            content_type="audio/mpeg",
+            path="s3://bucket/key",
+            hash="a" * 64,
+            mime_type="audio/mpeg",
         )
-        after = datetime.utcnow()
+        after = datetime.now(timezone.utc)
         assert before <= ref.created_at <= after
+
+    def test_is_frozen(self):
+        ref = ArtifactRefV1(
+            artifact_id="art_001",
+            path="s3://bucket/key",
+            hash="a" * 64,
+            mime_type="audio/mpeg",
+        )
+        with pytest.raises(ValidationError):
+            ref.path = "s3://bucket/other-key"
 
     @pytest.mark.parametrize(
         "missing_field",
-        ["artifact_id", "storage_path", "sha256", "content_type"],
+        ["artifact_id", "path", "hash", "mime_type"],
     )
     def test_required_fields(self, missing_field):
         fields = {
             "artifact_id": "art_001",
-            "storage_path": "s3://bucket/key",
-            "sha256": "a" * 64,
-            "content_type": "audio/mpeg",
+            "path": "s3://bucket/key",
+            "hash": "a" * 64,
+            "mime_type": "audio/mpeg",
         }
         del fields[missing_field]
         with pytest.raises(ValidationError):
             ArtifactRefV1(**fields)
+
+    @pytest.mark.parametrize("bad_hash", ["a" * 63, "a" * 65])
+    def test_hash_must_be_64_chars(self, bad_hash):
+        with pytest.raises(ValidationError):
+            ArtifactRefV1(
+                artifact_id="art_001",
+                path="s3://bucket/key",
+                hash=bad_hash,
+                mime_type="audio/mpeg",
+            )
 
 
 class TestStageRecordV1:
