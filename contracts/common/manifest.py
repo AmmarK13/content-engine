@@ -1,7 +1,11 @@
-from datetime import datetime 
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
+
+from contracts.common.envelope import ArtifactRefV1
+
+__all__ = ["StageStatus", "ArtifactRefV1", "StageRecordV1", "ProductionManifestV1"]
 
 
 class StageStatus(str,Enum):
@@ -11,20 +15,6 @@ class StageStatus(str,Enum):
     RUNNING  ="running"
     PASSED="passed"
     FAILED="failed"
-
-
-
-class ArtifactRefV1(BaseModel):
-    """
-    A pointer to a stored file (audio, video, script, etc.) — never the
-    file's actual bytes. The manifest and stage outputs should only ever
-    reference artifacts this way.
-    """
-    artifact_id: str = Field(..., description="Unique ID for this artifact")
-    storage_path: str = Field(..., description="Path/URI in the object store, e.g. s3://bucket/key")
-    sha256: str = Field(..., description="SHA-256 hash of the file's exact contents")
-    content_type: str = Field(..., description="e.g. audio/mpeg, video/mp4, application/json")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class StageRecordV1(BaseModel):
