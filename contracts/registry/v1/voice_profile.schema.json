@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "description": "Approved voice for a run.",
+  "properties": {
+    "voice_id": {
+      "description": "Unique voice identifier",
+      "title": "Voice Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Human-readable voice name",
+      "title": "Name",
+      "type": "string"
+    },
+    "reference_sample_id": {
+      "description": "Reference/pointer to the approved reference voice sample",
+      "title": "Reference Sample Id",
+      "type": "string"
+    },
+    "consent_grant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which ConsentGrantV1 covers this voice",
+      "title": "Consent Grant Id"
+    },
+    "policy_profile_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which PolicyProfileV1 applies to this voice",
+      "title": "Policy Profile Id"
+    }
+  },
+  "required": [
+    "voice_id",
+    "name",
+    "reference_sample_id"
+  ],
+  "title": "VoiceProfileV1",
+  "type": "object"
+}

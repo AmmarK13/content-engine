@@ -1,0 +1,25 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "description": "Which run this script belongs to",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "scenes": {
+      "description": "Script text per scene, in order",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Scenes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "scenes"
+  ],
+  "title": "ScriptPackageV1",
+  "type": "object"
+}

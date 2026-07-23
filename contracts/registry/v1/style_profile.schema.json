@@ -1,0 +1,34 @@
+{
+  "description": "Approved visual style definition for a run.",
+  "properties": {
+    "style_id": {
+      "description": "Unique style identifier",
+      "title": "Style Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Human-readable style name",
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Short description of the visual style",
+      "title": "Description"
+    }
+  },
+  "required": [
+    "style_id",
+    "name"
+  ],
+  "title": "StyleProfileV1",
+  "type": "object"
+}

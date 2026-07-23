@@ -1,0 +1,27 @@
+{
+  "description": "Consent record for use of a person's likeness or voice.",
+  "properties": {
+    "granted_by": {
+      "description": "Person granting consent",
+      "title": "Granted By",
+      "type": "string"
+    },
+    "scope": {
+      "description": "What the consent covers",
+      "title": "Scope",
+      "type": "string"
+    },
+    "granted_at": {
+      "description": "Consent timestamp",
+      "format": "date-time",
+      "title": "Granted At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "granted_by",
+    "scope"
+  ],
+  "title": "ConsentGrantV1",
+  "type": "object"
+}

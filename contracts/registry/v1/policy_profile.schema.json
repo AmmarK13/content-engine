@@ -1,0 +1,27 @@
+{
+  "description": "Content policy applied during a run.",
+  "properties": {
+    "policy_id": {
+      "description": "Unique policy identifier",
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Human-readable policy name",
+      "title": "Name",
+      "type": "string"
+    },
+    "applies_to": {
+      "description": "What this policy governs",
+      "title": "Applies To",
+      "type": "string"
+    }
+  },
+  "required": [
+    "policy_id",
+    "name",
+    "applies_to"
+  ],
+  "title": "PolicyProfileV1",
+  "type": "object"
+}

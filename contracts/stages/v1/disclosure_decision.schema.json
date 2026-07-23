@@ -1,0 +1,52 @@
+{
+  "$defs": {
+    "Modality": {
+      "description": "Which kind of video this run produces. Shared across IdeaRequestV1,\nMasterVideoV1, and DisclosureDecisionV1 \u2014 import this rather than\nredefining modality as a plain string elsewhere.",
+      "enum": [
+        "avatar",
+        "faceless"
+      ],
+      "title": "Modality",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Records the disclosure decision for a generated video.\n\nThis model captures whether the output contains synthetic media and\nwhich policy was used to make that decision.",
+  "properties": {
+    "modality": {
+      "$ref": "#/$defs/Modality",
+      "description": "Content modality - avatar or faceless."
+    },
+    "master_video_hash": {
+      "description": "SHA-256 hash of the master video.",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Master Video Hash",
+      "type": "string"
+    },
+    "contains_synthetic_media": {
+      "description": "Whether the output contains synthetic media.",
+      "title": "Contains Synthetic Media",
+      "type": "boolean"
+    },
+    "policy_basis": {
+      "description": "PolicyProfileV1 identifier used for this decision.",
+      "title": "Policy Basis",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "UTC timestamp when the disclosure decision was made.",
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "modality",
+    "master_video_hash",
+    "contains_synthetic_media",
+    "policy_basis"
+  ],
+  "title": "DisclosureDecisionV1",
+  "type": "object"
+}

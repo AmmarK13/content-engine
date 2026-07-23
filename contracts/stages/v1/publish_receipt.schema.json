@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "description": "Which run this receipt belongs to",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "platform_video_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Real platform ID, e.g. YouTube video ID - null for dry-run",
+      "title": "Platform Video Id"
+    },
+    "privacy": {
+      "description": "e.g. 'unlisted'",
+      "title": "Privacy",
+      "type": "string"
+    },
+    "dry_run": {
+      "description": "True if this was a dry-run, not a real upload",
+      "title": "Dry Run",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "run_id",
+    "privacy",
+    "dry_run"
+  ],
+  "title": "PublishReceiptV1",
+  "type": "object"
+}

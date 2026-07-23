@@ -1,0 +1,23 @@
+{
+  "description": "Configuration for a provider integration.",
+  "properties": {
+    "provider_name": {
+      "description": "Provider name",
+      "title": "Provider Name",
+      "type": "string"
+    },
+    "config": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Provider configuration values",
+      "title": "Config",
+      "type": "object"
+    }
+  },
+  "required": [
+    "provider_name"
+  ],
+  "title": "ProviderConfigV1",
+  "type": "object"
+}

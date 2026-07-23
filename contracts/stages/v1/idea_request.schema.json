@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "Modality": {
+      "description": "Which kind of video this run produces. Shared across IdeaRequestV1,\nMasterVideoV1, and DisclosureDecisionV1 \u2014 import this rather than\nredefining modality as a plain string elsewhere.",
+      "enum": [
+        "avatar",
+        "faceless"
+      ],
+      "title": "Modality",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The starting input for a run - what the person asked for.\n\nidentity_id is required only when modality is AVATAR (faceless runs\nhave no avatar identity). voice_id is required for both modalities,\nsince faceless runs still have narration.",
+  "properties": {
+    "idea_request_id": {
+      "description": "Unique ID for this idea request",
+      "title": "Idea Request Id",
+      "type": "string"
+    },
+    "modality": {
+      "$ref": "#/$defs/Modality",
+      "description": "Which kind of video this run produces"
+    },
+    "topic": {
+      "description": "What the video should be about",
+      "title": "Topic",
+      "type": "string"
+    },
+    "identity_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which IdentityProfileV1 to use. Required when modality=AVATAR; must be omitted/None for FACELESS runs.",
+      "title": "Identity Id"
+    },
+    "voice_id": {
+      "description": "Which VoiceProfileV1 to use",
+      "title": "Voice Id",
+      "type": "string"
+    },
+    "style_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which StyleProfileV1 to use, if one was chosen",
+      "title": "Style Id"
+    },
+    "consent_grant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which ConsentGrantV1 covers this request's identity/voice. Optional for now - whether this should be mandatory before a run is allowed to proceed is a pending team decision, not yet enforced here.",
+      "title": "Consent Grant Id"
+    },
+    "requested_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Who requested this video, if known",
+      "title": "Requested By"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "description": "Non-schema contextual data, mirroring StageOutputV1's metadata field - an intentional escape hatch for fields we haven't formalized yet.",
+      "title": "Metadata",
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "idea_request_id",
+    "modality",
+    "topic",
+    "voice_id"
+  ],
+  "title": "IdeaRequestV1",
+  "type": "object"
+}

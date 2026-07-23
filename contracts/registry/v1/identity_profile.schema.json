@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "description": "Approved avatar identity for a run.",
+  "properties": {
+    "identity_id": {
+      "description": "Unique identity identifier",
+      "title": "Identity Id",
+      "type": "string"
+    },
+    "name": {
+      "description": "Human-readable identity name",
+      "title": "Name",
+      "type": "string"
+    },
+    "reference_asset": {
+      "description": "Reference/pointer to the approved identity's source image",
+      "title": "Reference Asset",
+      "type": "string"
+    },
+    "consent_grant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which ConsentGrantV1 covers this identity",
+      "title": "Consent Grant Id"
+    },
+    "policy_profile_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which PolicyProfileV1 applies to this identity",
+      "title": "Policy Profile Id"
+    }
+  },
+  "required": [
+    "identity_id",
+    "name",
+    "reference_asset"
+  ],
+  "title": "IdentityProfileV1",
+  "type": "object"
+}
