@@ -1,0 +1,193 @@
+{
+  "$defs": {
+    "ArtifactRefV1": {
+      "additionalProperties": false,
+      "description": "A reference to a stored artifact \u2014 never the raw bytes themselves.\n\nStages pass around pointers (path + hash + mime type). The actual file\nlives in the object store (S3-compatible); the manifest / envelope only\never stores the reference.",
+      "properties": {
+        "artifact_id": {
+          "description": "Unique ID for this artifact.",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "path": {
+          "description": "Content-addressed storage path/key for the artifact, e.g. 's3://bucket/artifacts/<sha256>.mp4'. Must not be a mutable alias such as 'latest.mp4'.",
+          "title": "Path",
+          "type": "string"
+        },
+        "hash": {
+          "description": "SHA-256 hex digest of the artifact contents.",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Hash",
+          "type": "string"
+        },
+        "mime_type": {
+          "description": "MIME type of the stored artifact, e.g. 'video/mp4', 'audio/wav', 'application/json'.",
+          "title": "Mime Type",
+          "type": "string"
+        },
+        "created_at": {
+          "description": "UTC timestamp when this artifact reference was created.",
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "hash",
+        "mime_type"
+      ],
+      "title": "ArtifactRefV1",
+      "type": "object"
+    },
+    "ProviderDescriptorV1": {
+      "additionalProperties": false,
+      "description": "Generic description of whatever implementation handled a stage.\n\nThe pipeline graph never knows concrete vendor names \u2014 it only knows\ncapabilities (e.g. \"voice_provider\"). This descriptor is where the\nconcrete provider identity is recorded, for telemetry/debugging, without\nleaking that identity into the graph or contracts.",
+      "properties": {
+        "provider": {
+          "description": "Capability-level provider identifier, e.g. 'voice_provider'.",
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "description": "Underlying model name used by the provider implementation.",
+          "title": "Model",
+          "type": "string"
+        },
+        "version": {
+          "description": "Version/tag of the model or provider implementation.",
+          "title": "Version",
+          "type": "string"
+        },
+        "capability": {
+          "description": "The abstract capability this provider fulfills, e.g. 'script_generation', 'voice_synthesis', 'avatar_render'.",
+          "title": "Capability",
+          "type": "string"
+        },
+        "endpoint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Provider API endpoint or resource identifier, if applicable",
+          "title": "Endpoint"
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Cost incurred for this stage execution, if known",
+          "title": "Cost"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Execution latency in milliseconds, if known",
+          "title": "Latency Ms"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "When this provider was invoked, if known",
+          "title": "Timestamp"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "version",
+        "capability"
+      ],
+      "title": "ProviderDescriptorV1",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The wrapper every pipeline stage receives and emits.\n\nRequired fields per the runbook:\n    - stage_id\n    - attempt\n    - input hash\n    - artifact references\n    - validation reference\n    - provider descriptor",
+  "properties": {
+    "stage_id": {
+      "description": "Permanent identifier for the stage/gate, e.g. 'S00', 'S10', ..., 'G80', 'G90', 'S100'.",
+      "title": "Stage Id",
+      "type": "string"
+    },
+    "attempt": {
+      "description": "1-indexed attempt number for this stage execution. Distinguishes a first run from a local retry.",
+      "minimum": 1,
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "input_hash": {
+      "description": "SHA-256 hex digest of this stage's input payload. Changes whenever the upstream input changes.",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Input Hash",
+      "type": "string"
+    },
+    "artifact_refs": {
+      "description": "References to artifacts produced/consumed by this stage. Never raw bytes.",
+      "items": {
+        "$ref": "#/$defs/ArtifactRefV1"
+      },
+      "title": "Artifact Refs",
+      "type": "array"
+    },
+    "validation_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ArtifactRefV1"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Reference to this stage's ValidationReportV1 artifact (e.g. a stored validation_report.json), not the report inline."
+    },
+    "provider": {
+      "$ref": "#/$defs/ProviderDescriptorV1",
+      "description": "Descriptor of whichever provider implementation executed this stage, keyed by capability rather than vendor name."
+    },
+    "created_at": {
+      "description": "UTC timestamp when this envelope was created.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "stage_id",
+    "attempt",
+    "input_hash",
+    "provider"
+  ],
+  "title": "StageEnvelopeV1",
+  "type": "object"
+}

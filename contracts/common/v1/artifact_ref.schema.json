@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "description": "A reference to a stored artifact \u2014 never the raw bytes themselves.\n\nStages pass around pointers (path + hash + mime type). The actual file\nlives in the object store (S3-compatible); the manifest / envelope only\never stores the reference.",
+  "properties": {
+    "artifact_id": {
+      "description": "Unique ID for this artifact.",
+      "title": "Artifact Id",
+      "type": "string"
+    },
+    "path": {
+      "description": "Content-addressed storage path/key for the artifact, e.g. 's3://bucket/artifacts/<sha256>.mp4'. Must not be a mutable alias such as 'latest.mp4'.",
+      "title": "Path",
+      "type": "string"
+    },
+    "hash": {
+      "description": "SHA-256 hex digest of the artifact contents.",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Hash",
+      "type": "string"
+    },
+    "mime_type": {
+      "description": "MIME type of the stored artifact, e.g. 'video/mp4', 'audio/wav', 'application/json'.",
+      "title": "Mime Type",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "UTC timestamp when this artifact reference was created.",
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_id",
+    "path",
+    "hash",
+    "mime_type"
+  ],
+  "title": "ArtifactRefV1",
+  "type": "object"
+}

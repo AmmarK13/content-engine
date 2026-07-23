@@ -1,0 +1,36 @@
+{
+  "additionalProperties": false,
+  "description": "Result of running a stage's validator(s) against its output.\n\nMinimum required per the runbook:\n    - pass/fail\n    - failure list",
+  "properties": {
+    "passed": {
+      "description": "Whether the stage's output passed validation.",
+      "title": "Passed",
+      "type": "boolean"
+    },
+    "failures": {
+      "description": "Human-readable list of validation failures. Empty when passed=True. Examples: 'Voice duration mismatch', 'Missing captions', 'Invalid hash'.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Failures",
+      "type": "array"
+    },
+    "stage_id": {
+      "description": "Stage/gate this validation report applies to.",
+      "title": "Stage Id",
+      "type": "string"
+    },
+    "validated_at": {
+      "description": "UTC timestamp when validation ran.",
+      "format": "date-time",
+      "title": "Validated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "passed",
+    "stage_id"
+  ],
+  "title": "ValidationReportV1",
+  "type": "object"
+}

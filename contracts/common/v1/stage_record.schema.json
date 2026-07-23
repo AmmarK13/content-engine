@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "StageStatus": {
+      "enum": [
+        "pending",
+        "running",
+        "passed",
+        "failed"
+      ],
+      "title": "StageStatus",
+      "type": "string"
+    }
+  },
+  "description": "One row of the manifest's per-stage checklist.",
+  "properties": {
+    "stage_id": {
+      "description": "e.g. S00, S10, S20 ... G80, G90, S100",
+      "title": "Stage Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/StageStatus",
+      "default": "pending"
+    },
+    "attempt": {
+      "default": 1,
+      "title": "Attempt",
+      "type": "integer"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Started At"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completed At"
+    },
+    "output_artifact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Output Artifact Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "stage_id"
+  ],
+  "title": "StageRecordV1",
+  "type": "object"
+}
