@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any
 from pydantic import BaseModel, Field
 from contracts.common.envelope import ArtifactRefV1
-from contracts.common.idea_request import Modality
+from contracts.stages.idea_request import Modality
 
 __all__ = ["MasterVideoV1"]
 
