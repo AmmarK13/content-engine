@@ -1,0 +1,7 @@
+{
+  "provider_name": "Gemini",
+  "config": {
+    "model": "gemini-2.5-pro",
+    "region": "us-central1"
+  }
+}

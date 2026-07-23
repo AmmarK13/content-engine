@@ -1,0 +1,5 @@
+{
+  "policy_id": "policy_001",
+  "name": "Synthetic Media Disclosure Policy",
+  "applies_to": "avatar_generation"
+}
