@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class PublishReceiptV1(BaseModel):
-    
+    """Confirmation that a video was published, or a dry-run was attempted."""
 
     run_id: str = Field(..., description="Which run this receipt belongs to")
     platform_video_id: Optional[str] = Field(
