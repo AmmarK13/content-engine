@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class ScriptPackageV1(BaseModel):
-    \
+    """Output schema for S10 script generation, organized by scene."""
 
     run_id: str = Field(..., description="Which run this script belongs to")
     scenes: list[str] = Field(

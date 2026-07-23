@@ -1,3 +1,9 @@
+"""
+contracts/stages/s40_sync.py
+
+Output schema for S40 (media sync).
+"""
+
 
 
 from pydantic import BaseModel, Field
