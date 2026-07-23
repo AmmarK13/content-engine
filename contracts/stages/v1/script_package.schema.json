@@ -1,5 +1,6 @@
 {
   "additionalProperties": false,
+  "description": "Output schema for S10 script generation, organized by scene.",
   "properties": {
     "run_id": {
       "description": "Which run this script belongs to",

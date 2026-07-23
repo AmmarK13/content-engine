@@ -1,5 +1,6 @@
 {
   "additionalProperties": false,
+  "description": "Confirmation that a video was published, or a dry-run was attempted.",
   "properties": {
     "run_id": {
       "description": "Which run this receipt belongs to",

@@ -1,0 +1,36 @@
+{
+  "additionalProperties": false,
+  "description": "Request to generate the primary visual track for one pipeline run.\n\nDeliberately modality-agnostic: identity_id is populated for avatar\nruns and left None for faceless runs, mirroring the same pattern\nalready established on IdeaRequestV1. The graph and this contract\nnever need to know which modality a run is - only the provider\nconfigured behind S30 does.",
+  "properties": {
+    "run_id": {
+      "description": "Unique identifier of the pipeline run.",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "identity_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Which IdentityProfileV1 to use. Populated for avatar runs; None for faceless runs.",
+      "title": "Identity Id"
+    },
+    "scene_count": {
+      "description": "Number of scenes to generate visuals for.",
+      "minimum": 1,
+      "title": "Scene Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "run_id",
+    "scene_count"
+  ],
+  "title": "VisualRequestV1",
+  "type": "object"
+}
