@@ -46,11 +46,12 @@ class ArtifactRefV1(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="UTC timestamp when this artifact reference was created.",
     )
-
     model_config = {
-        "frozen": True,  # artifact refs are immutable once created
+        "frozen": True,
+        "extra": "forbid",
     }
 
+    
 
 class ProviderDescriptorV1(BaseModel):
     """
@@ -77,6 +78,20 @@ class ProviderDescriptorV1(BaseModel):
         "'script_generation', 'voice_synthesis', 'avatar_render'.",
     )
 
+    # Added: telemetry fields, matching the deck's cost/latency/provider/version rule
+    endpoint: Optional[str] = Field(
+        default=None, description="Provider API endpoint or resource identifier, if applicable"
+    )
+    cost: Optional[float] = Field(
+        default=None, description="Cost incurred for this stage execution, if known"
+    )
+    latency_ms: Optional[int] = Field(
+        default=None, description="Execution latency in milliseconds, if known"
+    )
+    timestamp: Optional[datetime] = Field(
+        default=None, description="When this provider was invoked, if known"
+    )
+    model_config = {"extra": "forbid"}
 
 # Deliverable: StageEnvelopeV1
 

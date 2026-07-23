@@ -1,14 +1,10 @@
-"""
-contracts/stages/g90_disclosure.py
-
-Stage schema for G90 disclosure decisions.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
+
+from contracts.stages.idea_request import Modality
 
 
 class DisclosureDecisionV1(BaseModel):
@@ -19,9 +15,8 @@ class DisclosureDecisionV1(BaseModel):
     which policy was used to make that decision.
     """
 
-    modality: str = Field(
-        ...,
-        description="Content modality, e.g. 'avatar' or 'faceless'.",
+    modality: Modality = Field(
+        ..., description="Content modality - avatar or faceless."
     )
 
     master_video_hash: str = Field(
@@ -53,7 +48,7 @@ class DisclosureDecisionV1(BaseModel):
 
 if __name__ == "__main__":
     disclosure = DisclosureDecisionV1(
-        modality="avatar",
+        modality=Modality.AVATAR,
         master_video_hash="a" * 64,
         contains_synthetic_media=True,
         policy_basis="policy_001",
