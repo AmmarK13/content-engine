@@ -1,7 +1,0 @@
-Malik's opinion - Decision 2 (script text: inline vs ArtifactRefV1)
-
-I think we should just keep the script text inline for now, not turn it into a file reference.
-
-Reasoning: a script is just plain text, it's small and it's not really "media" in the way audio or video is. The whole point of ArtifactRefV1 is to avoid passing big files around directly and instead just pass a pointer to where they're stored. A script doesn't have that problem, it's a few lines of text, so wrapping it in a file + hash + storage path feels like solving a problem we don't have yet.
-
-If later on scripts get way longer, or we start supporting multiple languages per script, then yeah, switching to ArtifactRefV1 would make sense at that point since it'd actually behave more like a real asset. But for right now, keeping it simple and inline is the right call.
