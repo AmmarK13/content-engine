@@ -32,6 +32,7 @@ from contracts.stages.g90_disclosure import DisclosureDecisionV1
 from contracts.stages.s10_script import ScriptPackageV1
 from contracts.stages.s40_sync import SynchronizedMediaV1
 from contracts.stages.s100_publish import PublishReceiptV1
+from contracts.stages.idea_request import IdeaRequestV1
 
 VALID_FIXTURES = [
     ("fixtures/valid/style_profile.json", StyleProfileV1),
@@ -49,6 +50,8 @@ VALID_FIXTURES = [
     ("fixtures/valid/validation_report.json", ValidationReportV1),
     ("fixtures/valid/stage_record.json", StageRecordV1),
     ("fixtures/valid/production_manifest.json", ProductionManifestV1),
+    ("fixtures/valid/idea_request_avatar.json", IdeaRequestV1),
+    ("fixtures/valid/idea_request_faceless.json",IdeaRequestV1),
 ]
 
 MALFORMED_FIXTURES = [
@@ -67,6 +70,7 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/validation_report_missing_stage_id.json", ValidationReportV1),
     ("fixtures/malformed/stage_record_invalid_status.json", StageRecordV1),
     ("fixtures/malformed/production_manifest_missing_idea_request_id.json", ProductionManifestV1),
+    ("fixtures/malformed/idea_request_avatar_missing_identity.json",IdeaRequestV1),
 ]
 
 
