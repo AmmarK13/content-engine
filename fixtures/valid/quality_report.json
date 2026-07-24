@@ -1,0 +1,10 @@
+{
+  "run_id": "run_001",
+  "master_video_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "passed": true,
+  "metrics": {
+    "identity_similarity": 0.95,
+    "sync_score": 0.98,
+    "audio_clarity": 0.92
+  }
+}

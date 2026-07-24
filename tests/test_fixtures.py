@@ -31,6 +31,8 @@ from contracts.common.manifest import ProductionManifestV1, StageRecordV1
 from contracts.stages.g90_disclosure import DisclosureDecisionV1
 from contracts.stages.s10_script import ScriptPackageV1
 from contracts.stages.s40_sync import SynchronizedMediaV1
+from contracts.stages.s70_qc import QualityReportV1
+from contracts.stages.g80_approval import HumanApprovalV1
 from contracts.stages.s100_publish import PublishReceiptV1
 
 VALID_FIXTURES = [
@@ -49,6 +51,8 @@ VALID_FIXTURES = [
     ("fixtures/valid/validation_report.json", ValidationReportV1),
     ("fixtures/valid/stage_record.json", StageRecordV1),
     ("fixtures/valid/production_manifest.json", ProductionManifestV1),
+    ("fixtures/valid/quality_report.json", QualityReportV1),
+    ("fixtures/valid/human_approval.json", HumanApprovalV1),
 ]
 
 MALFORMED_FIXTURES = [
@@ -67,6 +71,8 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/validation_report_missing_stage_id.json", ValidationReportV1),
     ("fixtures/malformed/stage_record_invalid_status.json", StageRecordV1),
     ("fixtures/malformed/production_manifest_missing_idea_request_id.json", ProductionManifestV1),
+    ("fixtures/malformed/quality_report_short_hash.json", QualityReportV1),
+    ("fixtures/malformed/human_approval_invalid_decision.json", HumanApprovalV1),
 ]
 
 
