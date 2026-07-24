@@ -34,6 +34,8 @@ from contracts.stages.s40_sync import SynchronizedMediaV1
 from contracts.stages.s70_qc import QualityReportV1
 from contracts.stages.g80_approval import HumanApprovalV1
 from contracts.stages.s100_publish import PublishReceiptV1
+from contracts.stages.idea_request import IdeaRequestV1
+from contracts.stages.s60_assembly import MasterVideoV1
 
 VALID_FIXTURES = [
     ("fixtures/valid/style_profile.json", StyleProfileV1),
@@ -53,6 +55,9 @@ VALID_FIXTURES = [
     ("fixtures/valid/production_manifest.json", ProductionManifestV1),
     ("fixtures/valid/quality_report.json", QualityReportV1),
     ("fixtures/valid/human_approval.json", HumanApprovalV1),
+    ("fixtures/valid/idea_request_avatar.json", IdeaRequestV1),
+    ("fixtures/valid/idea_request_faceless.json",IdeaRequestV1),
+    ("fixtures/valid/master_video.json", MasterVideoV1),
 ]
 
 MALFORMED_FIXTURES = [
@@ -73,6 +78,8 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/production_manifest_missing_idea_request_id.json", ProductionManifestV1),
     ("fixtures/malformed/quality_report_short_hash.json", QualityReportV1),
     ("fixtures/malformed/human_approval_invalid_decision.json", HumanApprovalV1),
+    ("fixtures/malformed/idea_request_avatar_missing_identity.json",IdeaRequestV1),
+    ("fixtures/malformed/master_video_duration_zero.json", MasterVideoV1),
 ]
 
 
