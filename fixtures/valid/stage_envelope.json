@@ -1,0 +1,20 @@
+{
+  "stage_id": "S10",
+  "attempt": 1,
+  "input_hash": "222222222222222222222222222222222222222222222222222222222222222b",
+  "artifact_refs": [
+    {
+      "artifact_id": "artifact_101",
+      "path": "s3://avatar-harness-poc/artifacts/script_run_001.json",
+      "hash": "111111111111111111111111111111111111111111111111111111111111111a",
+      "mime_type": "application/json"
+    }
+  ],
+  "validation_ref": null,
+  "provider": {
+    "provider": "script_provider",
+    "model": "stub-script-model",
+    "version": "v0.1.0",
+    "capability": "script_generation"
+  }
+}

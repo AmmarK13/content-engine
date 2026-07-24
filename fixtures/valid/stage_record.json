@@ -1,0 +1,8 @@
+{
+  "stage_id": "S00",
+  "status": "passed",
+  "attempt": 1,
+  "started_at": "2026-07-24T10:00:00Z",
+  "completed_at": "2026-07-24T10:00:05Z",
+  "output_artifact_ids": ["artifact_101"]
+}

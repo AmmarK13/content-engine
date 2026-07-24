@@ -1,0 +1,5 @@
+{
+  "model": "eleven_multilingual_v2",
+  "version": "2.0",
+  "capability": "voice_synthesis"
+}

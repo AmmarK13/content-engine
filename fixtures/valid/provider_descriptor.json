@@ -1,0 +1,8 @@
+{
+  "provider": "voice_provider",
+  "model": "eleven_multilingual_v2",
+  "version": "2.0",
+  "capability": "voice_synthesis",
+  "cost": 0.012,
+  "latency_ms": 850
+}

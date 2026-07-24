@@ -1,0 +1,8 @@
+{
+  "run_id": "run_001",
+  "idea_request_id": "idea_001",
+  "stages": [
+    { "stage_id": "S00", "status": "passed", "attempt": 1, "output_artifact_ids": ["artifact_101"] },
+    { "stage_id": "S10", "status": "running", "attempt": 1, "output_artifact_ids": [] }
+  ]
+}
