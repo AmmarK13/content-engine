@@ -13,6 +13,7 @@ class StyleProfileV1(BaseModel):
         default=None,
         description="Short description of the visual style",
     )
+    
 
 
 class PolicyProfileV1(BaseModel):
@@ -24,6 +25,7 @@ class PolicyProfileV1(BaseModel):
         ...,
         description="What this policy governs",
     )
+    model_config= {"extra":"forbid"}
 
 
 class ConsentGrantV1(BaseModel):
@@ -41,6 +43,7 @@ class ConsentGrantV1(BaseModel):
         default_factory=datetime.utcnow,
         description="Consent timestamp",
     )
+    model_config= {"extra":"forbid"}
 
 
 class ProviderConfigV1(BaseModel):
@@ -54,6 +57,7 @@ class ProviderConfigV1(BaseModel):
         default_factory=dict,
         description="Provider configuration values",
     )
+    model_config= {"extra":"forbid"}
 
 
 if __name__ == "__main__":

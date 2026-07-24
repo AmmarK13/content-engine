@@ -1,4 +1,5 @@
 {
+  "additionalProperties": false,
   "description": "Configuration for a provider integration.",
   "properties": {
     "provider_name": {
