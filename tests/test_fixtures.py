@@ -20,6 +20,14 @@ from contracts.registry.profiles import (
     ConsentGrantV1,
     ProviderConfigV1,
 )
+from contracts.common.envelope import (
+    ArtifactRefV1,
+    ProviderDescriptorV1,
+    StageEnvelopeV1,
+    StageOutputV1,
+    ValidationReportV1,
+)
+from contracts.common.manifest import ProductionManifestV1, StageRecordV1
 from contracts.stages.g90_disclosure import DisclosureDecisionV1
 from contracts.stages.s10_script import ScriptPackageV1
 from contracts.stages.s40_sync import SynchronizedMediaV1
@@ -34,6 +42,13 @@ VALID_FIXTURES = [
     ("fixtures/valid/script_package.json", ScriptPackageV1),
     ("fixtures/valid/synchronized_media.json", SynchronizedMediaV1),
     ("fixtures/valid/publish_receipt.json", PublishReceiptV1),
+    ("fixtures/valid/artifact_ref.json", ArtifactRefV1),
+    ("fixtures/valid/provider_descriptor.json", ProviderDescriptorV1),
+    ("fixtures/valid/stage_envelope.json", StageEnvelopeV1),
+    ("fixtures/valid/stage_output.json", StageOutputV1),
+    ("fixtures/valid/validation_report.json", ValidationReportV1),
+    ("fixtures/valid/stage_record.json", StageRecordV1),
+    ("fixtures/valid/production_manifest.json", ProductionManifestV1),
 ]
 
 MALFORMED_FIXTURES = [
@@ -45,6 +60,13 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/script_package_empty_scenes.json", ScriptPackageV1),
     ("fixtures/malformed/synchronized_media_missing_artifact.json", SynchronizedMediaV1),
     ("fixtures/malformed/publish_receipt_missing_privacy.json", PublishReceiptV1),
+    ("fixtures/malformed/artifact_ref_short_hash.json", ArtifactRefV1),
+    ("fixtures/malformed/provider_descriptor_missing_provider.json", ProviderDescriptorV1),
+    ("fixtures/malformed/stage_envelope_missing_provider.json", StageEnvelopeV1),
+    ("fixtures/malformed/stage_output_bad_metadata_type.json", StageOutputV1),
+    ("fixtures/malformed/validation_report_missing_stage_id.json", ValidationReportV1),
+    ("fixtures/malformed/stage_record_invalid_status.json", StageRecordV1),
+    ("fixtures/malformed/production_manifest_missing_idea_request_id.json", ProductionManifestV1),
 ]
 
 

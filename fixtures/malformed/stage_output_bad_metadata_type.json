@@ -1,0 +1,5 @@
+{
+  "payload": { "script_text": "Today we discuss AI." },
+  "metadata": "this should be an object, not a string",
+  "artifact_refs": []
+}
