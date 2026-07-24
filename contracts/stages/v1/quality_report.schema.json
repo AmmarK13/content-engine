@@ -1,0 +1,38 @@
+{
+  "additionalProperties": false,
+  "description": "QC result for a MasterVideoV1 - feeds into G80 approval.",
+  "properties": {
+    "run_id": {
+      "description": "Which run this QC pass belongs to",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "master_video_hash": {
+      "description": "SHA-256 of the MasterVideoV1 this report evaluates",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Master Video Hash",
+      "type": "string"
+    },
+    "passed": {
+      "description": "Whether QC passed",
+      "title": "Passed",
+      "type": "boolean"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "description": "Named metric scores, e.g. identity_similarity, sync_score",
+      "title": "Metrics",
+      "type": "object"
+    }
+  },
+  "required": [
+    "run_id",
+    "master_video_hash",
+    "passed"
+  ],
+  "title": "QualityReportV1",
+  "type": "object"
+}

@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "ApprovalDecision": {
+      "enum": [
+        "approved",
+        "rejected",
+        "changes_requested"
+      ],
+      "title": "ApprovalDecision",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A human reviewer's approval/rejection decision for one MasterVideoV1.",
+  "properties": {
+    "reviewer_id": {
+      "description": "Who reviewed this",
+      "title": "Reviewer Id",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/ApprovalDecision",
+      "description": "The reviewer's decision"
+    },
+    "master_video_hash": {
+      "description": "Which exact video (by hash) this decision applies to",
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Master Video Hash",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "UTC timestamp when the decision was recorded",
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "comments": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional reviewer notes",
+      "title": "Comments"
+    }
+  },
+  "required": [
+    "reviewer_id",
+    "decision",
+    "master_video_hash"
+  ],
+  "title": "HumanApprovalV1",
+  "type": "object"
+}
