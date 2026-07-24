@@ -1,0 +1,11 @@
+{
+  "run_id": "run_001",
+  "captions_artifact": {
+    "artifact_id": "artifact_001",
+    "path": "artifacts/captions.json",
+    "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "mime_type": "application/json",
+    "created_at": "2026-07-24T12:00:00Z"
+  },
+  "word_count": -1
+}
