@@ -1,0 +1,8 @@
+{
+  "run_id": "run_001",
+  "master_video_hash": "short_hash",
+  "passed": true,
+  "metrics": {
+    "identity_similarity": 0.95
+  }
+}
