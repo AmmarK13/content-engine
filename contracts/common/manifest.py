@@ -25,6 +25,7 @@ class StageRecordV1(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     output_artifact_ids: list[str] = Field(default_factory=list)
+    model_config ={"extra":"forbid"}
 
 
 class ProductionManifestV1(BaseModel):
@@ -36,6 +37,7 @@ class ProductionManifestV1(BaseModel):
     idea_request_id: str = Field(..., description="ID of the originating IdeaRequestV1")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     stages: list[StageRecordV1] = Field(default_factory=list)
+    model_config = {"extra":"forbid"}
 
 
 

@@ -1,6 +1,7 @@
 {
   "$defs": {
     "StageRecordV1": {
+      "additionalProperties": false,
       "description": "One row of the manifest's per-stage checklist.",
       "properties": {
         "stage_id": {
@@ -68,6 +69,7 @@
       "type": "string"
     }
   },
+  "additionalProperties": false,
   "description": "The central checklist record for one run \u2014 tracks the status of\nevery stage/gate for this specific video from S00 through S100.",
   "properties": {
     "run_id": {

@@ -11,6 +11,7 @@
       "type": "string"
     }
   },
+  "additionalProperties": false,
   "description": "One row of the manifest's per-stage checklist.",
   "properties": {
     "stage_id": {
