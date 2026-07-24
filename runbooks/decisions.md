@@ -1,7 +1,7 @@
 # Team Decisions - M0
 
 ## Decision 1: consent_grant_id precedence
-Date: [today's date]
+Date: 24 July 2026
 Raised by: Ammar (Phase 3 planning)
 Resolved by: Fatima
 
@@ -16,7 +16,7 @@ Enforcement (the actual cross-check) is not yet built - deferred to a
 later validator, not part of M0's contract layer.
 
 ## Decision 2: script text - inline vs. ArtifactRefV1
-Date: [today's date]
+Date: 24 July 2026
 Raised by: Ammar (Phase 3 planning)
 Resolved by: Fatima, Malik
 
