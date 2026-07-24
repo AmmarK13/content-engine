@@ -13,6 +13,8 @@ class StyleProfileV1(BaseModel):
         default=None,
         description="Short description of the visual style",
     )
+    model_config= {"extra":"forbid"}
+
     
 
 
