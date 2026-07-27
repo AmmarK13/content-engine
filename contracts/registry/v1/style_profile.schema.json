@@ -1,4 +1,5 @@
 {
+  "additionalProperties": false,
   "description": "Approved visual style definition for a run.",
   "properties": {
     "style_id": {
