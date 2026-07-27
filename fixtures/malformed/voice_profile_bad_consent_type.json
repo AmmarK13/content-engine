@@ -1,0 +1,6 @@
+{
+  "voice_id": "voice_001",
+  "name": "Default Narrator",
+  "reference_sample_id": "sample_001",
+  "consent_grant_id": 12345
+}

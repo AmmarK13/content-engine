@@ -1,0 +1,5 @@
+{
+  "identity_id": "identity_001",
+  "name": "Default Presenter",
+  "reference_asset": "s3://avatar-harness-poc/identities/identity_001_ref.png"
+}

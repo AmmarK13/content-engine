@@ -1,0 +1,9 @@
+{
+  "run_id": "run_001",
+  "video_artifact": {
+    "artifact_id": "artifact_202",
+    "path": "s3://avatar-harness-poc/artifacts/visual_run_001.mp4",
+    "hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "mime_type": "video/mp4"
+  }
+}
