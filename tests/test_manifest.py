@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone,UTC
 
 import pytest
 from pydantic import ValidationError
@@ -91,7 +91,7 @@ class TestStageRecordV1:
         assert stage.output_artifact_ids == []
 
     def test_explicit_values(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         stage = StageRecordV1(
             stage_id="S10",
             status=StageStatus.PASSED,

@@ -1,0 +1,11 @@
+{
+  "run_id": "run_001",
+  "voice_id": "voice_001",
+  "audio_artifact": {
+    "artifact_id": "artifact_201",
+    "path": "s3://avatar-harness-poc/artifacts/voice_run_001.wav",
+    "hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "mime_type": "audio/wav"
+  },
+  "duration_seconds": 42.3
+}
