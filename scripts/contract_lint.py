@@ -148,30 +148,35 @@ def check_model_version_suffix(path: Path) -> list[str]:
 
 def check_no_naive_utcnow(path: Path) -> list[str]:
     """
-    Flags datetime.utcnow() usage, deprecated as of Python 3.12 in favor
-    of datetime.now(timezone.utc) - already the pattern used in
-    envelope.py. Currently present in manifest.py and profiles.py, both
-    flagged during review but never actually fixed.
+    Flags deprecated datetime.utcnow usage, whether called directly
+    (datetime.utcnow()) or passed as a callable
+    (default_factory=datetime.utcnow). Use datetime.now(UTC) instead.
     """
     problems = []
     tree = ast.parse(path.read_text(), filename=str(path))
+
     for node in ast.walk(tree):
+        target = None
+
         if isinstance(node, ast.Call):
-            func = node.func
-            if (
-                isinstance(func, ast.Attribute)
-                and func.attr == "utcnow"
-                and isinstance(func.value, ast.Name)
-                and func.value.id == "datetime"
-            ):
-                rel = path.relative_to(REPO_ROOT)
-                problems.append(
-                    f"{rel}:{node.lineno} uses datetime.utcnow() (deprecated) - "
-                    f"use datetime.now(timezone.utc)"
-                )
+            target = node.func
+        elif isinstance(node, ast.Attribute):
+            target = node
+
+        if (
+            isinstance(target, ast.Attribute)
+            and target.attr == "utcnow"
+            and isinstance(target.value, ast.Name)
+            and target.value.id == "datetime"
+        ):
+            rel = path.relative_to(REPO_ROOT)
+            problems.append(
+                f"{rel}:{node.lineno} uses deprecated datetime.utcnow - "
+                f"use datetime.now(UTC)"
+            )
+
     return problems
-
-
+    
 def check_test_file_has_real_tests(path: Path) -> list[str]:
     """
     Flags any tests/test_*.py or tests/*_test.py file with zero actual
