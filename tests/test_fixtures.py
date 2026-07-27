@@ -36,6 +36,7 @@ from contracts.stages.g80_approval import HumanApprovalV1
 from contracts.stages.s100_publish import PublishReceiptV1
 from contracts.stages.idea_request import IdeaRequestV1
 from contracts.stages.s60_assembly import MasterVideoV1
+from contracts.stages.s50_captions import CaptionTrackV1
 
 VALID_FIXTURES = [
     ("fixtures/valid/style_profile.json", StyleProfileV1),
@@ -58,6 +59,7 @@ VALID_FIXTURES = [
     ("fixtures/valid/idea_request_avatar.json", IdeaRequestV1),
     ("fixtures/valid/idea_request_faceless.json",IdeaRequestV1),
     ("fixtures/valid/master_video.json", MasterVideoV1),
+    ("fixtures/valid/caption_track.json", CaptionTrackV1),
 ]
 
 MALFORMED_FIXTURES = [
@@ -80,6 +82,7 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/human_approval_invalid_decision.json", HumanApprovalV1),
     ("fixtures/malformed/idea_request_avatar_missing_identity.json",IdeaRequestV1),
     ("fixtures/malformed/master_video_duration_zero.json", MasterVideoV1),
+    ("fixtures/malformed/caption_track_negative_word_count.json", CaptionTrackV1),
 ]
 
 
