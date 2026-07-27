@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,UTC
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -35,7 +35,9 @@ class ProductionManifestV1(BaseModel):
     """
     run_id: str = Field(..., description="Unique ID for this pipeline run")
     idea_request_id: str = Field(..., description="ID of the originating IdeaRequestV1")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(
+    default_factory=lambda: datetime.now(UTC)
+)
     stages: list[StageRecordV1] = Field(default_factory=list)
     model_config = {"extra":"forbid"}
 

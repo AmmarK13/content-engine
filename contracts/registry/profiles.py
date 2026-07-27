@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,UTC
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -42,7 +42,7 @@ class ConsentGrantV1(BaseModel):
         description="What the consent covers",
     )
     granted_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=datetime.now(UTC),
         description="Consent timestamp",
     )
     model_config= {"extra":"forbid"}
