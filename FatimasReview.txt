@@ -1,0 +1,56 @@
+Reviewed contracts/common/envelope.py
+
+Models reviewed:
+
+ArtifactRefV1
+ProviderDescriptorV1
+StageEnvelopeV1
+StageOutputV1
+ValidationReportV1
+
+Checklist
+
+✅ Version suffix (V1) used consistently.
+✅ extra="forbid" present on all models.
+✅ No bare id fields (artifact_id, stage_id, etc. used consistently).
+✅ Stored file references use ArtifactRefV1 where appropriate.
+
+Findings
+
+No issues found.
+Reviewed contracts/common/manifest.py
+
+Models reviewed:
+
+StageRecordV1
+ProductionManifestV1
+
+Checklist
+
+✅ Versioned model names.
+✅ No bare id fields.
+✅ extra="forbid" present.
+✅ No raw file paths stored.
+
+Findings
+
+No issues found.
+Noticed a minor style difference: some files use datetime.now(UTC) while others use datetime.now(timezone.utc). Both are functionally equivalent, so this is only a consistency observation, not a contract issue.
+Decision Record Review
+
+Reviewed runbooks/decisions.md against the implemented contracts.
+
+✅ The documented consent_grant_id precedence matches the agreed design (registry profiles are authoritative; IdeaRequestV1 acts as an optional override).
+✅ The decision to keep script text inline rather than using ArtifactRefV1 is accurately documented.
+Decision Comment Review
+
+Reviewed:
+
+IdeaRequestV1
+IdentityProfileV1
+VoiceProfileV1
+
+Findings
+
+IdentityProfileV1 and VoiceProfileV1 correctly reference the resolved consent/policy decision.
+IdeaRequestV1 still contains a "pending team decision" note, but it refers to whether consent_grant_id should become mandatory before execution, which is a separate unresolved design question. No inconsistency found.
