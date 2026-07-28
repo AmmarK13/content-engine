@@ -36,6 +36,7 @@ from contracts.stages.g80_approval import HumanApprovalV1
 from contracts.stages.s100_publish import PublishReceiptV1
 from contracts.stages.idea_request import IdeaRequestV1
 from contracts.stages.s60_assembly import MasterVideoV1
+from contracts.common.telemetry import StageRunRecordV1
 from contracts.stages.s50_captions import CaptionTrackV1
 from contracts.registry.identity_profile import IdentityProfileV1
 from contracts.registry.voice_profile import VoiceProfileV1
@@ -64,6 +65,7 @@ VALID_FIXTURES = [
     ("fixtures/valid/idea_request_faceless.json",IdeaRequestV1),
     ("fixtures/valid/master_video.json", MasterVideoV1),
     ("fixtures/valid/caption_track.json", CaptionTrackV1),
+    ("fixtures/valid/stage_run_record.json", StageRunRecordV1),
     ("fixtures/valid/identity_profile.json", IdentityProfileV1),
     ("fixtures/valid/voice_profile.json", VoiceProfileV1),
     ("fixtures/valid/voice_track.json", VoiceTrackV1),
@@ -93,6 +95,7 @@ MALFORMED_FIXTURES = [
     ("fixtures/malformed/idea_request_avatar_missing_identity.json",IdeaRequestV1),
     ("fixtures/malformed/master_video_duration_zero.json", MasterVideoV1),
     ("fixtures/malformed/caption_track_negative_word_count.json", CaptionTrackV1),
+    ("fixtures/malformed/stage_run_record_missing_provider.json", StageRunRecordV1),
     ("fixtures/malformed/identity_profile_bad_consent_type.json", IdentityProfileV1),
     ("fixtures/malformed/voice_profile_bad_consent_type.json", VoiceProfileV1),
     ("fixtures/malformed/voice_track_zero_duration.json", VoiceTrackV1),
