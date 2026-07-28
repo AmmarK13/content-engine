@@ -1,4 +1,5 @@
 from psycopg import connect
+import os
 
 from contracts.common.manifest import (
     ProductionManifestV1,
@@ -6,12 +7,14 @@ from contracts.common.manifest import (
 )
 
 
+
+
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "content_engine",
-    "user": "temporal",
-    "password": "temporal",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", 5432)),
+    "dbname": os.getenv("DB_NAME", "content_engine"),
+    "user": os.getenv("DB_USER", "temporal"),
+    "password": os.getenv("DB_PASSWORD", "temporal"),
 }
 
 
