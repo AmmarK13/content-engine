@@ -1,5 +1,8 @@
 from datetime import UTC, datetime
 import uuid
+import pytest
+
+
 
 from orchestrator.manifest_store import load_manifest, save_manifest
 from contracts.common.manifest import (
@@ -8,7 +11,7 @@ from contracts.common.manifest import (
     StageStatus,
 )
 
-
+@pytest.mark.integration
 def test_manifest_round_trip():
     """
     Saving then loading a manifest should reconstruct
