@@ -8,8 +8,9 @@ from contracts.common.envelope import ProviderDescriptorV1, StageEnvelopeV1, Sta
 from contracts.stages.s10_script import ScriptPackageV1
 from providers.base import StageProvider
 from providers.stub_script import StubScriptProvider
+import pytest
 
-
+@pytest.mark.integration
 def test_stub_script_provider_satisfies_protocol():
     """Verify that StubScriptProvider satisfies the StageProvider Protocol."""
     provider = StubScriptProvider()
