@@ -1,0 +1,123 @@
+"""
+orchestrator/pipeline.py
+
+The real 11-stage pipeline workflow. Replaces hello_workflow as the
+primary workflow the worker runs.
+"""
+
+from datetime import timedelta
+
+from temporalio import workflow
+
+with workflow.unsafe.imports_passed_through():
+    import hashlib
+    import json
+    from contracts.common.envelope import (
+        ProviderDescriptorV1,
+        StageEnvelopeV1,
+    )
+    from contracts.stages.g80_approval import HumanApprovalV1
+
+TASK_QUEUE = "avatar-harness"
+STAGE_TIMEOUT = timedelta(minutes=5)
+
+# The ordered sequence of capabilities the pipeline executes.
+# G80 is NOT in this list — it's a durable signal wait, not a provider call.
+STAGE_SEQUENCE = [
+    ("S00", "intake"),
+    ("S10", "script_generation"),
+    ("S20", "voice_generation"),
+    ("S30", "avatar_generation"),
+    ("S40", "media_sync"),
+    ("S50", "caption_generation"),
+    ("S60", "assembly"),
+    ("S70", "quality_check"),
+    ("G90", "disclosure"),
+    ("S100", "publish"),
+]
+
+def _build_envelope(stage_id: str, capability: str, run_id: str, attempt: int = 1) -> dict:
+    """Build a minimal valid StageEnvelopeV1 for a stage call."""
+    input_data = {"run_id": run_id, "stage_id": stage_id}
+    input_hash = hashlib.sha256(
+        json.dumps(input_data, sort_keys=True).encode()
+    ).hexdigest()
+
+    envelope = StageEnvelopeV1(
+        stage_id=stage_id,
+        attempt=attempt,
+        input_hash=input_hash,
+        artifact_refs=[],
+        validation_ref=None,
+        provider=ProviderDescriptorV1(
+            provider=capability,
+            model="stub",
+            version="0.1.0",
+            capability=capability,
+        ),
+    )
+    return envelope.model_dump()
+
+
+@workflow.defn
+class AvatarPipeline:
+    """
+    The full S00-to-S100 pipeline. Processing stages are dispatched
+    via the generic run_stage Activity. G80 (approval) is a durable
+    signal wait that pauses the workflow until a human sends a signal.
+    """
+
+    def __init__(self):
+        self._approval: dict | None = None
+        self._stage_outputs: dict[str, dict] = {}
+
+    @workflow.signal
+    async def approve(self, decision: dict) -> None:
+        """
+        Receive an approval signal from an external tool (e.g. scripts/approve.py).
+        The decision dict should be a HumanApprovalV1.model_dump().
+        """
+        self._approval = decision
+
+    @workflow.run
+    async def run(self, idea_json: str) -> dict:
+        """
+        Execute the full pipeline for one IdeaRequestV1.
+
+        Args:
+            idea_json: JSON string of the IdeaRequestV1.
+
+        Returns:
+            The final stage's StageOutputV1 as a dict.
+        """
+        idea = json.loads(idea_json)
+        run_id = idea.get("idea_request_id", "run_unknown")
+
+        # --- S00 through S70: sequential stage execution ---
+        for stage_id, capability in STAGE_SEQUENCE[:8]:
+            envelope_dict = _build_envelope(stage_id, capability, run_id)
+            output_dict = await workflow.execute_activity(
+                "run_stage",
+                args=[capability, envelope_dict],
+                start_to_close_timeout=STAGE_TIMEOUT,
+            )
+            self._stage_outputs[stage_id] = output_dict
+            workflow.logger.info(f"Stage {stage_id} completed")
+
+        # --- G80: durable wait for human approval ---
+        workflow.logger.info("Waiting for approval signal (G80)...")
+        await workflow.wait_condition(lambda: self._approval is not None)
+        workflow.logger.info(f"Approval received: {self._approval}")
+
+        # --- G90 + S100: disclosure check then publish ---
+        for stage_id, capability in STAGE_SEQUENCE[8:]:
+            envelope_dict = _build_envelope(stage_id, capability, run_id)
+            output_dict = await workflow.execute_activity(
+                "run_stage",
+                args=[capability, envelope_dict],
+                start_to_close_timeout=STAGE_TIMEOUT,
+            )
+            self._stage_outputs[stage_id] = output_dict
+            workflow.logger.info(f"Stage {stage_id} completed")
+
+        return self._stage_outputs.get("S100", {})
