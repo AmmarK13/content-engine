@@ -3,13 +3,16 @@ providers/stub_script.py
 
 S10 Script Generation Stub Provider.
 
-Produces a deterministic ScriptPackageV1 payload wrapped inside a StageOutputV1.
+Produces a deterministic ScriptPackageV1 payload wrapped inside a StageOutputV1,
+and persists the script as a real artifact via storage.py.
 """
 
+import json
 from typing import Any
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.stages.s10_script import ScriptPackageV1
+from orchestrator.storage import put_artifact
 
 
 class StubScriptProvider:
@@ -22,7 +25,6 @@ class StubScriptProvider:
     capability: str = "script_generation"
 
     def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
-        # Extract run_id from payload if available, or generate a deterministic default
         payload_dict: dict[str, Any] = getattr(envelope, "payload", {}) if hasattr(envelope, "payload") else {}
         run_id = payload_dict.get("run_id", "run_stub_s10")
 
@@ -35,6 +37,13 @@ class StubScriptProvider:
             ],
         )
 
+        script_bytes = json.dumps(script_package.model_dump()).encode("utf-8")
+        artifact_ref = put_artifact(
+            data=script_bytes,
+            artifact_id=f"script_{run_id}",
+            mime_type="application/json",
+        )
+
         return StageOutputV1(
             payload=script_package.model_dump(),
             metadata={
@@ -42,5 +51,5 @@ class StubScriptProvider:
                 "provider": "stub_script_provider",
                 "scene_count": len(script_package.scenes),
             },
-            artifact_refs=[],
+            artifact_refs=[artifact_ref],
         )
