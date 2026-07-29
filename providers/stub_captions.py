@@ -8,10 +8,13 @@ captions JSON artifact through storage.py.
 """
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
+from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.stages.s50_captions import CaptionTrackV1
+from orchestrator.manifest_store import save_stage_record
 from orchestrator.storage import put_artifact
 
 
@@ -44,6 +47,19 @@ class StubCaptionsProvider:
             data=caption_bytes,
             artifact_id=f"captions_{run_id}",
             mime_type="application/json",
+        )
+
+        save_stage_record(
+            run_id=run_id,
+            idea_request_id=run_id,
+            stage=StageRecordV1(
+                stage_id="S50",
+                status=StageStatus.PASSED,
+                attempt=1,
+                started_at=datetime.now(UTC),
+                completed_at=datetime.now(UTC),
+                output_artifact_ids=[artifact.artifact_id],
+            ),
         )
 
         caption_track = CaptionTrackV1(
