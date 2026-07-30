@@ -7,11 +7,12 @@ Base interfaces for stage providers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 
 
+@runtime_checkable
 class StageProvider(Protocol):
     """Protocol that all stage providers must implement."""
 
