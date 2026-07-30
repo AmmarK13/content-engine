@@ -1,27 +1,41 @@
+from __future__ import annotations
+
 """
 providers/base.py
 
-Provider interface protocol definition.
-
-Every provider — stub today, real vendor integration in M2 — satisfies this Protocol.
-The graph only ever knows the capability name, never which concrete class satisfies it.
+Base interfaces for stage providers.
 """
 
-from typing import Protocol, runtime_checkable
+from abc import ABC, abstractmethod
+from typing import Protocol
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 
 
-@runtime_checkable
 class StageProvider(Protocol):
-    """
-    Protocol definition for capability providers.
+    """Protocol that all stage providers must implement."""
 
-    Every provider (stub or real vendor) must define a capability string and a run
-    method that accepts a StageEnvelopeV1 and returns a StageOutputV1.
-    """
-
-    capability: str
+    @property
+    def capability(self) -> str:
+        """The capability this provider implements (e.g., 'voice_synthesis')."""
+        ...
 
     def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+        """Execute the stage with the given envelope and return the output."""
         ...
+
+
+# Abstract base class alternative (if you prefer ABC over Protocol)
+class BaseStageProvider(ABC):
+    """Abstract base class for stage providers."""
+
+    @property
+    @abstractmethod
+    def capability(self) -> str:
+        """The capability this provider implements."""
+        pass
+
+    @abstractmethod
+    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+        """Execute the stage with the given envelope and return the output."""
+        pass
