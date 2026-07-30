@@ -17,15 +17,8 @@ from orchestrator.activities import run_stage
 
 # Import and register all stub providers so the registry is populated
 # before the worker starts accepting work.
-from orchestrator.registry import register
-from providers.stub_script import StubScriptProvider
-
-from orchestrator.activities import run_stage
-from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
+import orchestrator.registry as registry
 from orchestrator.registry import register_all_stubs
-
-# Register stubs - add more here as other team members' stubs land
-register(StubScriptProvider())
 
 TEMPORAL_HOST = "localhost:7233"
 
