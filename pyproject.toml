@@ -5,11 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12.11"
 dependencies = [
-    "boto3>=1.43.57",
-    "jsonschema>=4.26.0",
-    "psycopg[binary]>=3.3.4",
-    "pydantic>=2.13.4",
-    "temporalio>=1.30.0",
+    "temporalio>=1.0.0",
+    "pydantic>=2.0.0",
+    "boto3>=1.28.0",
+    "psycopg>=3.1.0",
+    "pytest>=7.0.0",
 ]
 
 [dependency-groups]
