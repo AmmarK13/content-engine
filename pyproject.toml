@@ -10,6 +10,9 @@ dependencies = [
     "boto3>=1.28.0",
     "psycopg>=3.1.0",
     "pytest>=7.0.0",
+    "google-auth>=2.56.2",
+    "google-auth-oauthlib>=1.4.0",
+    "google-api-python-client>=2.198.0",
 ]
 
 [dependency-groups]
