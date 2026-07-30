@@ -1,12 +1,13 @@
-from psycopg import connect
+from datetime import UTC, datetime
 import os
+
+from psycopg import connect
 
 from contracts.common.manifest import (
     ProductionManifestV1,
     StageRecordV1,
+    StageStatus,
 )
-
-
 
 
 DB_CONFIG = {
@@ -106,7 +107,7 @@ def load_manifest(run_id: str) -> ProductionManifestV1:
         stages.append(
             StageRecordV1(
                 stage_id=row[2],
-                status=row[3],
+                status=StageStatus(row[3]),
                 attempt=row[4],
                 started_at=row[5],
                 completed_at=row[6],
@@ -122,3 +123,52 @@ def load_manifest(run_id: str) -> ProductionManifestV1:
         created_at=rows[0][1],
         stages=stages,
     )
+
+
+def save_stage_record(
+    run_id: str,
+    idea_request_id: str,
+    stage: StageRecordV1,
+) -> None:
+    """
+    Persist a single StageRecordV1.
+
+    Intended for individual stage executions (e.g. stub providers) that
+    only know about their own stage rather than the complete
+    ProductionManifestV1.
+    """
+
+    manifest_created_at = datetime.now(UTC)
+
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            print(f"Saving stage={stage.stage_id}, run_id={run_id}, attempt={stage.attempt}")
+            cur.execute(
+                """
+                INSERT INTO manifest_stage_records (
+                    run_id,
+                    idea_request_id,
+                    stage_id,
+                    status,
+                    attempt,
+                    manifest_created_at,
+                    started_at,
+                    completed_at,
+                    output_artifact_ids
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    run_id,
+                    idea_request_id,
+                    stage.stage_id,
+                    stage.status.value,
+                    stage.attempt,
+                    manifest_created_at,
+                    stage.started_at,
+                    stage.completed_at,
+                    stage.output_artifact_ids,
+                ),
+            )
+
+        conn.commit()
