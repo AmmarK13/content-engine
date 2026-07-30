@@ -1,11 +1,6 @@
 """
 tests/test_providers.py
 
-Unit tests for provider interfaces and stub implementations.
-"""
-"""
-tests/test_providers.py
-
 Tests for all stage providers.
 """
 
@@ -36,7 +31,6 @@ from providers.stub_qc import StubQCProvider
 from providers.stub_script import StubScriptProvider
 from providers.stub_sync import StubSyncProvider
 from providers.stub_voice import StubVoiceProvider
-
 
 @pytest.fixture(autouse=True)
 def clear_registry():
