@@ -8,6 +8,7 @@ in their StageOutputV1. Calling put_artifact() again here would duplicate
 artifacts already stored by the provider.
 """
 
+import hashlib
 from datetime import datetime, timezone
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
@@ -15,7 +16,25 @@ from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.common.telemetry import StageRunRecordV1
 from orchestrator.manifest_store import save_stage_record
 from orchestrator.registry import get as get_provider
+from orchestrator.storage import get_artifact
 from orchestrator.telemetry import record_telemetry
+
+
+def _verify_artifact_hashes(output: StageOutputV1) -> None:
+    """
+    Checkpoint step: re-fetch every artifact the provider claims to have
+    stored, recompute its SHA-256, and confirm it matches ref.hash before
+    anything gets persisted. A provider can only claim a stage passed once
+    what's actually in storage is verified to match its own reference.
+    """
+    for ref in output.artifact_refs:
+        stored_bytes = get_artifact(ref)
+        actual_hash = hashlib.sha256(stored_bytes).hexdigest()
+        if actual_hash != ref.hash:
+            raise ValueError(
+                f"Hash mismatch for artifact {ref.artifact_id}: "
+                f"expected {ref.hash}, got {actual_hash}"
+            )
 
 
 def execute_stage(
@@ -25,15 +44,18 @@ def execute_stage(
     envelope: StageEnvelopeV1,
 ) -> StageOutputV1:
     """
-    Run one stage's provider, then record both the manifest row and the
-    telemetry row for this execution. Artifact storage is the provider's
-    own responsibility - this function only reads back what the provider
-    already returned.
+    Run one stage's provider, verify its output artifacts against storage,
+    then record both the manifest row and the telemetry row for this
+    execution. Artifact storage itself is the provider's own responsibility
+    - this function only reads back and verifies what the provider already
+    stored, it never calls put_artifact.
     """
     started_at = datetime.now(timezone.utc)
 
     provider = get_provider(capability)
     output: StageOutputV1 = provider.run(envelope)
+
+    _verify_artifact_hashes(output)
 
     ended_at = datetime.now(timezone.utc)
 
