@@ -26,13 +26,13 @@ STAGE_TIMEOUT = timedelta(minutes=5)
 STAGE_SEQUENCE = [
     ("S00", "intake"),
     ("S10", "script_generation"),
-    ("S20", "voice_generation"),
-    ("S30", "avatar_generation"),
+    ("S20", "voice_synthesis"),
+    ("S30", "avatar_render"),
     ("S40", "media_sync"),
     ("S50", "caption_generation"),
     ("S60", "assembly"),
-    ("S70", "quality_check"),
-    ("G90", "disclosure"),
+    ("S70", "quality_control"),
+    ("G90", "disclosure_check"),
     ("S100", "publish"),
 ]
 
@@ -40,8 +40,8 @@ def _build_envelope(
     stage_id: str,
     capability: str,
     run_id: str,
+    artifact_refs: list[dict] | None = None,
     attempt: int = 1,
-    artifact_refs: list | None = None,
 ) -> dict:
     """Build a minimal valid StageEnvelopeV1 for a stage call."""
     input_data = {"run_id": run_id, "stage_id": stage_id}
@@ -110,10 +110,19 @@ class AvatarPipeline:
 
         # --- S00 through S70: sequential stage execution ---
         for stage_id, capability in STAGE_SEQUENCE[:8]:
-            envelope_dict = _build_envelope(stage_id, capability, run_id)
+            prior_artifact_refs: list[dict] = []
+            for prior_output in self._stage_outputs.values():
+                prior_artifact_refs.extend(prior_output.get("artifact_refs", []))
+
+            envelope_dict = _build_envelope(
+                stage_id,
+                capability,
+                run_id,
+                artifact_refs=prior_artifact_refs,
+            )
             output_dict = await workflow.execute_activity(
                 "run_stage",
-                args=[capability, envelope_dict],
+                args=[run_id, capability, envelope_dict],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
             self._stage_outputs[stage_id] = output_dict
@@ -136,16 +145,19 @@ class AvatarPipeline:
 
         # --- G90 + S100: disclosure check then publish ---
         for stage_id, capability in STAGE_SEQUENCE[8:]:
-            prev_refs = []
-            for prev_output in self._stage_outputs.values():
-                prev_refs.extend(prev_output.get("artifact_refs", []))
-            
+            prior_artifact_refs = []
+            for prior_output in self._stage_outputs.values():
+                prior_artifact_refs.extend(prior_output.get("artifact_refs", []))
+
             envelope_dict = _build_envelope(
-                stage_id, capability, run_id, artifact_refs=prev_refs
+                stage_id,
+                capability,
+                run_id,
+                artifact_refs=prior_artifact_refs,
             )
             output_dict = await workflow.execute_activity(
                 "run_stage",
-                args=[capability, envelope_dict],
+                args=[run_id, capability, envelope_dict],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
             self._stage_outputs[stage_id] = output_dict

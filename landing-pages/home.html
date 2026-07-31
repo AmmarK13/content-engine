@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avatar Harness — Every video, verified end to end</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12161A;
+    --panel: #1B2127;
+    --line: #2A3138;
+    --accent: #F5A623;
+    --verified: #3ECF8E;
+    --text: #ECEFF2;
+    --muted: #8B94A0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+  .display { font-family: 'Space Grotesk', sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  a { color: inherit; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 0;
+  }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+  }
+  .logo span { color: var(--accent); }
+  nav a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-left: 28px;
+    transition: color 0.15s ease;
+  }
+  nav a:hover { color: var(--text); }
+
+  .hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 96px 24px 64px;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(245,166,35,0.015) 3px,
+      rgba(245,166,35,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: -1;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--verified);
+    box-shadow: 0 0 0 3px rgba(62,207,142,0.15);
+  }
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    max-width: 16ch;
+    margin-bottom: 22px;
+  }
+  .sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 48ch;
+    margin-bottom: 36px;
+  }
+  .cta-row { display: flex; gap: 14px; align-items: center; }
+  .btn {
+    display: inline-block;
+    padding: 13px 26px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.12s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--accent); color: #14181C; }
+  .btn-ghost { color: var(--text); border: 1px solid var(--line); }
+
+  /* Pipeline strip — the signature element */
+  .strip-wrap {
+    margin-top: 72px;
+    padding: 28px 24px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  .strip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 18px;
+  }
+  .strip {
+    display: flex;
+    align-items: center;
+    min-width: 760px;
+  }
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+  }
+  .stage-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+  .stage-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--line);
+    border: 2px solid var(--muted);
+    z-index: 1;
+    transition: transform 0.2s ease;
+  }
+  .stage-dot.done { background: var(--verified); border-color: var(--verified); }
+  .stage-dot.current {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stage-dot.current { animation: none; }
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+  }
+  .stage-name {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+  }
+  .stage::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    width: 100%;
+    height: 1px;
+    background: var(--line);
+    z-index: 0;
+  }
+  .stage:last-child::after { display: none; }
+
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 24px;
+  }
+  .section-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .section-sub {
+    color: var(--muted);
+    max-width: 52ch;
+    margin-bottom: 44px;
+  }
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 800px) { .grid3 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 26px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+  }
+  .card .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .card h3 { font-size: 1.05rem; margin-bottom: 10px; font-weight: 600; }
+  .card p { color: var(--muted); font-size: 0.92rem; }
+
+  .disclosure {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--verified);
+    border-radius: 8px;
+    padding: 28px 32px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .disclosure .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--verified);
+    background: rgba(62,207,142,0.1);
+    border: 1px solid rgba(62,207,142,0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-top: 3px;
+  }
+  .disclosure p { color: var(--muted); font-size: 0.94rem; }
+  .disclosure strong { color: var(--text); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 32px 24px;
+  }
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-inner .muted { color: var(--muted); font-size: 0.85rem; }
+  .footer-links a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-left: 20px;
+  }
+  .footer-links a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">avatar<span>harness</span></div>
+  <nav>
+    <a href="#how">How it works</a>
+    <a href="#trust">Disclosure</a>
+    <a href="privacy-page.html">Privacy</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="eyebrow"><span class="dot"></span>walking skeleton — live pipeline</div>
+  <h1 class="display">Every video, verified end to end.</h1>
+  <p class="sub">Avatar Harness turns a single idea into a fully produced, disclosure-labeled video — with a tracked checkpoint at every stage from script to publish.</p>
+  <div class="cta-row">
+    <a href="#how" class="btn btn-primary">See the pipeline</a>
+    <a href="privacy-page.html" class="btn btn-ghost">Privacy policy</a>
+  </div>
+
+  <div class="strip-wrap">
+    <div class="strip-label">S00 → S100 · one run, eleven checkpoints</div>
+    <div class="strip">
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S00</span><span class="stage-name">Intake</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S10</span><span class="stage-name">Script</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S20</span><span class="stage-name">Voice</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S30</span><span class="stage-name">Avatar</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S40</span><span class="stage-name">Sync</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S50</span><span class="stage-name">Captions</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S60</span><span class="stage-name">Assembly</span></div>
+      <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S70</span><span class="stage-name">QC</span></div>
+      <div class="stage"><div class="stage-dot current"></div><span class="stage-id">G80</span><span class="stage-name">Approval</span></div>
+      <div class="stage"><div class="stage-dot"></div><span class="stage-id">G90</span><span class="stage-name">Disclosure</span></div>
+      <div class="stage"><div class="stage-dot"></div><span class="stage-id">S100</span><span class="stage-name">Publish</span></div>
+    </div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="section-title display">How a run moves through the harness</div>
+  <p class="section-sub">Every stage consumes and produces a tracked artifact — nothing is passed between steps as a loose file. Each one is stored, hashed, and checkpointed before the next begins.</p>
+  <div class="grid3">
+    <div class="card">
+      <span class="tag mono">S00 – S50</span>
+      <h3>Generate</h3>
+      <p>Script, voice, avatar, sync, and captions are produced in sequence, each one a verified artifact rather than a temporary file.</p>
+    </div>
+    <div class="card">
+      <span class="tag mono">S60 – G80</span>
+      <h3>Verify</h3>
+      <p>The assembled video passes an automated quality check, then pauses for a human reviewer to approve the exact version by hash.</p>
+    </div>
+    <div class="card">
+      <span class="tag mono">G90 – S100</span>
+      <h3>Publish</h3>
+      <p>A disclosure record is attached confirming synthetic media, then the video is uploaded unlisted for final review.</p>
+    </div>
+  </div>
+</section>
+
+<section id="trust">
+  <div class="section-title display">Disclosure isn't a checkbox here</div>
+  <p class="section-sub">Governance is built into the pipeline itself, not bolted on after.</p>
+  <div class="disclosure">
+    <span class="badge">G90 · enforced</span>
+    <p><strong>Every avatar-modality video is labeled as synthetic media before it's published.</strong> This isn't optional or configurable per run — the disclosure gate is a structural part of the pipeline, and a video without it does not reach the publish stage.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="muted">Avatar Harness — internal walking-skeleton build</div>
+    <div class="footer-links">
+      <a href="privacy-page.html">Privacy</a>
+      <a href="#how">How it works</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const revealTargets = document.querySelectorAll('.card, .stage, .disclosure, h1, .sub');
+  
+  revealTargets.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = '';
+          // Reset transition style so hover CSS effects take over seamlessly
+          setTimeout(() => {
+            entry.target.style.transition = '';
+          }, 600);
+        }, i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealTargets.forEach(el => observer.observe(el));
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    revealTargets.forEach(el => {
+      el.style.transition = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+</script>
+</body>
+</html>

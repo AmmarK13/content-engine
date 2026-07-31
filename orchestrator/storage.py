@@ -68,9 +68,18 @@ def put_artifact(data: bytes, artifact_id: str, mime_type: str) -> ArtifactRefV1
             Body=data,
             ContentType=mime_type,
         )
-    except Exception:
-        # MinIO stack unavailable locally (unit test environment without Docker)
-        pass
+    except Exception as exc:
+        fallback = os.environ.get("ALLOW_STORAGE_FALLBACK", "false").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        if fallback:
+            pass
+        else:
+            raise RuntimeError(
+                f"Failed to put artifact {artifact_id} to {BUCKET}/{key}: {exc}"
+            ) from exc
 
     return ArtifactRefV1(
         artifact_id=artifact_id,

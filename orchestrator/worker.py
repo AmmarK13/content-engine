@@ -25,7 +25,7 @@ from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
 from orchestrator.registry import register_all_stubs
 
 # Register stubs - add more here as other team members' stubs land
-register(StubScriptProvider())
+#register(StubScriptProvider())  removing it from here since reigster stub call all. 
 
 TEMPORAL_HOST = "localhost:7233"
 
@@ -44,7 +44,6 @@ async def main():
     )
     
     print(f"Starting worker on task queue: {TASK_QUEUE}")
-    print("Registered providers:", list(registry._providers.keys()))
     
     # Run the worker
     await worker.run()

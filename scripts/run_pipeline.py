@@ -34,8 +34,10 @@ async def main() -> None:
         task_queue=TASK_QUEUE,
     )
     print(f"Pipeline started: workflow_id={handle.id}")
+    print(f"Run ID: {idea.idea_request_id}")
     print(f"Monitor at: http://localhost:8080/namespaces/default/workflows/{handle.id}")
-    print(f"Send approval with: uv run python scripts/approve.py {handle.id}")
+    print(f"Send approval with: uv run python scripts/approve.py {handle.id} {idea.idea_request_id}")
+    print(f"Verify manifest with: uv run python scripts/verify_manifest.py {idea.idea_request_id}")
 
 
 if __name__ == "__main__":
