@@ -57,6 +57,21 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 96px 24px 64px;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(245,166,35,0.015) 3px,
+      rgba(245,166,35,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: -1;
   }
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -98,9 +113,9 @@
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: transform 0.12s ease, opacity 0.12s ease;
+    transition: transform 0.2s ease, opacity 0.12s ease;
   }
-  .btn:hover { transform: translateY(-1px); }
+  .btn:hover { transform: translateY(-2px); }
   .btn-primary { background: var(--accent); color: #14181C; }
   .btn-ghost { color: var(--text); border: 1px solid var(--line); }
 
@@ -146,6 +161,7 @@
     background: var(--line);
     border: 2px solid var(--muted);
     z-index: 1;
+    transition: transform 0.2s ease;
   }
   .stage-dot.done { background: var(--verified); border-color: var(--verified); }
   .stage-dot.current {
@@ -204,6 +220,11 @@
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 26px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
   }
   .card .tag {
     font-family: 'JetBrains Mono', monospace;
@@ -269,7 +290,7 @@
   <nav>
     <a href="#how">How it works</a>
     <a href="#trust">Disclosure</a>
-    <a href="privacy.html">Privacy</a>
+    <a href="privacy-page.html">Privacy</a>
   </nav>
 </header>
 
@@ -279,7 +300,7 @@
   <p class="sub">Avatar Harness turns a single idea into a fully produced, disclosure-labeled video — with a tracked checkpoint at every stage from script to publish.</p>
   <div class="cta-row">
     <a href="#how" class="btn btn-primary">See the pipeline</a>
-    <a href="privacy.html" class="btn btn-ghost">Privacy policy</a>
+    <a href="privacy-page.html" class="btn btn-ghost">Privacy policy</a>
   </div>
 
   <div class="strip-wrap">
@@ -335,11 +356,46 @@
   <div class="footer-inner">
     <div class="muted">Avatar Harness — internal walking-skeleton build</div>
     <div class="footer-links">
-      <a href="privacy.html">Privacy</a>
+      <a href="privacy-page.html">Privacy</a>
       <a href="#how">How it works</a>
     </div>
   </div>
 </footer>
 
+<script>
+  const revealTargets = document.querySelectorAll('.card, .stage, .disclosure, h1, .sub');
+  
+  revealTargets.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = '';
+          // Reset transition style so hover CSS effects take over seamlessly
+          setTimeout(() => {
+            entry.target.style.transition = '';
+          }, 600);
+        }, i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealTargets.forEach(el => observer.observe(el));
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    revealTargets.forEach(el => {
+      el.style.transition = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+</script>
 </body>
 </html>
