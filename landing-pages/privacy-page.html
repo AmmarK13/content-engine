@@ -79,6 +79,11 @@
     border-radius: 10px;
     padding: 24px 28px;
     margin-top: 40px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
   }
   .card p { color: var(--text); }
   .card .label {
@@ -96,7 +101,7 @@
 
 <header>
   <div class="logo">avatar<span>harness</span></div>
-  <a class="back" href="index.html">← Back</a>
+  <a class="back" href="home.html">← Back</a>
 </header>
 
 <main>
@@ -121,5 +126,39 @@
   </div>
 </main>
 
+<script>
+  const revealTargets = document.querySelectorAll('.card, h1, h2, p, .eyebrow');
+  
+  revealTargets.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = '';
+          setTimeout(() => {
+            entry.target.style.transition = '';
+          }, 600);
+        }, i * 40);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  revealTargets.forEach(el => observer.observe(el));
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    revealTargets.forEach(el => {
+      el.style.transition = 'none';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+</script>
 </body>
 </html>
