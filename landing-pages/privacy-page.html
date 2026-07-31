@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Avatar Harness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12161A;
+    --panel: #1B2127;
+    --line: #2A3138;
+    --accent: #F5A623;
+    --verified: #3ECF8E;
+    --text: #ECEFF2;
+    --muted: #8B94A0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 24px 0;
+  }
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .logo span { color: var(--accent); }
+  header a.back { font-size: 0.9rem; color: var(--muted); }
+  header a.back:hover { color: var(--text); }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .updated { color: var(--muted); font-size: 0.88rem; margin-bottom: 48px; }
+
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-top: 40px;
+    margin-bottom: 12px;
+  }
+  p { color: var(--muted); margin-bottom: 4px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: 40px;
+  }
+  .card p { color: var(--text); }
+  .card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--verified);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">avatar<span>harness</span></div>
+  <a class="back" href="index.html">← Back</a>
+</header>
+
+<main>
+  <div class="eyebrow">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Avatar Harness POC</p>
+
+  <p>Avatar Harness POC is an internal testing tool that uploads AI-generated videos to YouTube via the YouTube Data API v3.</p>
+
+  <h2>Data collected</h2>
+  <p>YouTube OAuth tokens, stored temporarily for the duration of a test session and not persisted to any external service.</p>
+
+  <h2>Data sharing</h2>
+  <p>None. No user data is collected, stored, or shared with third parties.</p>
+
+  <h2>Synthetic media disclosure</h2>
+  <p>Videos produced by this pipeline that feature an AI-generated avatar are labeled as containing synthetic media at the time of upload, in line with YouTube's disclosure requirements.</p>
+
+  <div class="card">
+    <span class="label">Contact</span>
+    <p>[project contact email]</p>
+  </div>
+</main>
+
+</body>
+</html>
