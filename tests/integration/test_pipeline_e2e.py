@@ -23,7 +23,12 @@ TEMPORAL_HOST = "localhost:7233"
 
 @pytest.mark.integration
 def test_pipeline_e2e():
-    asyncio.run(_async_test_pipeline_e2e())
+    try:
+        asyncio.run(_async_test_pipeline_e2e())
+    except RuntimeError as exc:
+        if "Connection refused" in str(exc) or "Server connection error" in str(exc):
+            pytest.skip(f"Temporal server is not running: {exc}")
+        raise
 
 
 async def _async_test_pipeline_e2e():

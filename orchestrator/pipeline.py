@@ -36,7 +36,13 @@ STAGE_SEQUENCE = [
     ("S100", "publish"),
 ]
 
-def _build_envelope(stage_id: str, capability: str, run_id: str, attempt: int = 1) -> dict:
+def _build_envelope(
+    stage_id: str,
+    capability: str,
+    run_id: str,
+    attempt: int = 1,
+    artifact_refs: list | None = None,
+) -> dict:
     """Build a minimal valid StageEnvelopeV1 for a stage call."""
     input_data = {"run_id": run_id, "stage_id": stage_id}
     input_hash = hashlib.sha256(
@@ -47,7 +53,7 @@ def _build_envelope(stage_id: str, capability: str, run_id: str, attempt: int = 
         stage_id=stage_id,
         attempt=attempt,
         input_hash=input_hash,
-        artifact_refs=[],
+        artifact_refs=artifact_refs or [],
         validation_ref=None,
         provider=ProviderDescriptorV1(
             provider=capability,
@@ -130,7 +136,13 @@ class AvatarPipeline:
 
         # --- G90 + S100: disclosure check then publish ---
         for stage_id, capability in STAGE_SEQUENCE[8:]:
-            envelope_dict = _build_envelope(stage_id, capability, run_id)
+            prev_refs = []
+            for prev_output in self._stage_outputs.values():
+                prev_refs.extend(prev_output.get("artifact_refs", []))
+            
+            envelope_dict = _build_envelope(
+                stage_id, capability, run_id, artifact_refs=prev_refs
+            )
             output_dict = await workflow.execute_activity(
                 "run_stage",
                 args=[capability, envelope_dict],
