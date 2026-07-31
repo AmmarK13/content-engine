@@ -22,18 +22,27 @@ def clear() -> None:
     _providers.clear()
 
 def register_all_stubs() -> None:
-    """Register all stub providers for the pipeline."""
+    from providers.stub_intake import StubIntakeProvider
+    from providers.stub_script import StubScriptProvider
     from providers.stub_voice import StubVoiceProvider
     from providers.stub_avatar import StubAvatarProvider
     from providers.stub_sync import StubSyncProvider
+    from providers.stub_captions import StubCaptionsProvider
+    from providers.stub_assembly import StubAssemblyProvider
+    from providers.stub_qc import StubQCProvider
+    from providers.stub_disclosure import StubDisclosureProvider
+    from providers.stub_publish import StubPublishProvider
 
+    register(StubIntakeProvider())
+    register(StubScriptProvider())
     register(StubVoiceProvider())
     register(StubAvatarProvider())
     register(StubSyncProvider())
-
-    # Note: Other stubs (S00, S10, S50, S60, S70, G90, S100) will be registered
-    # by their respective owners (Fatima, Malik, Arslan)
-
+    register(StubCaptionsProvider())
+    register(StubAssemblyProvider())
+    register(StubQCProvider())
+    register(StubDisclosureProvider())
+    register(StubPublishProvider())
 
 # Auto-register stubs when this module is imported
 register_all_stubs()

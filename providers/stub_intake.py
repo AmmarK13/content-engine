@@ -20,7 +20,6 @@ from typing import Any
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.stages.idea_request import IdeaRequestV1, Modality
-from orchestrator.manifest_store import save_stage_record
 from orchestrator.storage import put_artifact
 
 
@@ -56,18 +55,6 @@ class StubIntakeProvider:
             mime_type="application/json",
         )
 
-        save_stage_record(
-            run_id=run_id,
-            idea_request_id=idea.idea_request_id,
-            stage=StageRecordV1(
-                stage_id="S00",
-                status=StageStatus.PASSED,
-                attempt=1,
-                started_at=datetime.now(UTC),
-                completed_at=datetime.now(UTC),
-                output_artifact_ids=[artifact.artifact_id],
-            ),
-        )
 
         return StageOutputV1(
             payload=idea.model_dump(mode="json"),
