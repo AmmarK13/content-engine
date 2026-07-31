@@ -22,8 +22,11 @@ TEMPORAL_HOST = "localhost:7233"
 
 
 @pytest.mark.integration
-@pytest.mark.asyncio
-async def test_pipeline_e2e():
+def test_pipeline_e2e():
+    asyncio.run(_async_test_pipeline_e2e())
+
+
+async def _async_test_pipeline_e2e():
     """
     Executes the full pipeline:
     1. Triggers workflow execution with an IdeaRequestV1.
