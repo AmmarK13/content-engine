@@ -142,7 +142,6 @@ def save_stage_record(
 
     with get_connection() as conn:
         with conn.cursor() as cur:
-            print(f"Saving stage={stage.stage_id}, run_id={run_id}, attempt={stage.attempt}")
             cur.execute(
                 """
                 INSERT INTO manifest_stage_records (
@@ -157,6 +156,12 @@ def save_stage_record(
                     output_artifact_ids
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+
+                ON CONFLICT (run_id, stage_id, attempt)
+                DO UPDATE SET
+                    status = EXCLUDED.status,
+                    completed_at = EXCLUDED.completed_at,
+                    output_artifact_ids = EXCLUDED.output_artifact_ids
                 """,
                 (
                     run_id,
