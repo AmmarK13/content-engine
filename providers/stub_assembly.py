@@ -16,7 +16,6 @@ from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.stages.idea_request import Modality
 from contracts.stages.s60_assembly import MasterVideoV1
-from orchestrator.manifest_store import save_stage_record
 from orchestrator.storage import put_artifact
 
 
@@ -45,18 +44,6 @@ class StubAssemblyProvider:
             mime_type="video/mp4",
         )
 
-        save_stage_record(
-            run_id=run_id,
-            idea_request_id=run_id,  # Temporary until IdeaRequest wiring lands.
-            stage=StageRecordV1(
-                stage_id="S60",
-                status=StageStatus.PASSED,
-                attempt=1,
-                started_at=datetime.now(UTC),
-                completed_at=datetime.now(UTC),
-                output_artifact_ids=[artifact.artifact_id],
-            ),
-        )
 
         master_video = MasterVideoV1(
             run_id=run_id,
