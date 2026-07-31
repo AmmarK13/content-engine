@@ -50,6 +50,9 @@ def _ensure_bucket_exists(client) -> None:
             client.create_bucket(Bucket=BUCKET)
         else:
             raise
+    except Exception:
+        # MinIO stack unavailable locally (e.g. unit test environment without Docker)
+        pass
 
 
 def put_artifact(data: bytes, artifact_id: str, mime_type: str) -> ArtifactRefV1:

@@ -76,6 +76,7 @@ class AvatarPipeline:
     def __init__(self):
         self._approval: dict | None = None
         self._stage_outputs: dict[str, dict] = {}
+        self._current_master_hash: str | None = None
 
     @workflow.signal
     async def approve(self, decision: dict) -> None:
@@ -83,7 +84,15 @@ class AvatarPipeline:
         Receive an approval signal from an external tool (e.g. scripts/approve.py).
         The decision dict should be a HumanApprovalV1.model_dump().
         """
-        self._approval = decision
+        # Hardened G80 gate: check master_video_hash matches current assembly output
+        decision_hash = decision.get("master_video_hash")
+        if self._current_master_hash is None or decision_hash == self._current_master_hash:
+            self._approval = decision
+        else:
+            workflow.logger.warning(
+                f"Ignoring stale approval signal for hash {decision_hash}. "
+                f"Expected current master hash: {self._current_master_hash}"
+            )
 
     @workflow.run
     async def run(self, idea_json: str) -> dict:
@@ -117,6 +126,16 @@ class AvatarPipeline:
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
             self._stage_outputs[stage_id] = output_dict
+            
+            # Record current master video hash from S60 assembly output if available
+            if stage_id == "S60":
+                refs = output_dict.get("artifact_refs", [])
+                if refs and isinstance(refs, list) and "hash" in refs[0]:
+                    self._current_master_hash = refs[0]["hash"]
+                elif "payload" in output_dict and isinstance(output_dict["payload"], dict):
+                    video_art = output_dict["payload"].get("video_artifact", {})
+                    self._current_master_hash = video_art.get("hash")
+
             workflow.logger.info(f"Stage {stage_id} completed")
 
         # --- G80: durable wait for human approval ---
