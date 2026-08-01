@@ -122,7 +122,7 @@ class AvatarPipeline:
             )
             output_dict = await workflow.execute_activity(
                 "run_stage",
-                args=[run_id, capability, envelope_dict],
+                args=[capability,envelope_dict, run_id,run_id,],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
             self._stage_outputs[stage_id] = output_dict
@@ -157,7 +157,7 @@ class AvatarPipeline:
             )
             output_dict = await workflow.execute_activity(
                 "run_stage",
-                args=[run_id, capability, envelope_dict],
+                args=[capability,envelope_dict, run_id,run_id,],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
             self._stage_outputs[stage_id] = output_dict
