@@ -18,7 +18,7 @@ TEMPORAL_HOST = "localhost:7233"
 
 async def main() -> None:
     idea = IdeaRequestV1(
-        idea_request_id="run_m1_day4",
+        idea_request_id="run_m1_ammar4",
         modality=Modality.AVATAR,
         topic="M1 walking skeleton test",
         identity_id="identity_001",

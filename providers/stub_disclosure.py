@@ -11,6 +11,8 @@ from typing import Any
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.stages.g90_disclosure import DisclosureDecisionV1
 from contracts.stages.idea_request import Modality
+from orchestrator.storage import put_artifact
+import json
 
 
 class StubDisclosureProvider:
@@ -34,6 +36,13 @@ class StubDisclosureProvider:
             contains_synthetic_media=True,
             policy_basis="policy_stub_g90",
         )
+        disclosure_bytes = disclosure_decision.model_dump_json().encode("utf-8")
+        artifact = put_artifact(
+    data=disclosure_bytes,
+    artifact_id=f"disclosure_{envelope.stage_id}",   # contains "disclosure" so stub_publish finds it
+    mime_type="application/json",
+    )
+
 
         return StageOutputV1(
             payload=disclosure_decision.model_dump(mode="json"),
@@ -42,5 +51,5 @@ class StubDisclosureProvider:
                 "provider": "stub_disclosure_provider",
                 "contains_synthetic_media": disclosure_decision.contains_synthetic_media,
             },
-            artifact_refs=[],
+            artifact_refs=[artifact],
         )
