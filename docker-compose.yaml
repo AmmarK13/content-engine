@@ -9,7 +9,9 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+      - ./sql/create_manifest_stage_records.sql:/docker-entrypoint-initdb.d/02-manifest.sql
+      - ./sql/create_stage_run_records.sql:/docker-entrypoint-initdb.d/03-telemetry.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U temporal"]
       interval: 5s
@@ -22,7 +24,6 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-      
     environment:
       - DB=postgres12
       - DB_PORT=5432
