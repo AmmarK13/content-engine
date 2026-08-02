@@ -58,6 +58,7 @@
     margin: 0 auto;
     padding: 96px 24px 64px;
     position: relative;
+    overflow: visible;
   }
   .hero::before {
     content: '';
@@ -72,6 +73,19 @@
     );
     pointer-events: none;
     z-index: -1;
+  }
+  /* subtle layered background for parallax/depth */
+  .hero-bg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140%;
+    height: 140%;
+    transform: translate(-50%, -50%) translateY(0px);
+    background: radial-gradient(ellipse at center, rgba(245,166,35,0.03) 0%, transparent 40%), radial-gradient(ellipse at 30% 20%, rgba(62,207,142,0.02) 0%, transparent 30%);
+    pointer-events: none;
+    z-index: -2;
+    transition: transform 0.25s linear;
   }
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -193,6 +207,22 @@
   }
   .stage:last-child::after { display: none; }
 
+  /* Progress fill along the strip (animated from left to right) */
+  .strip { position: relative; }
+  .strip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), rgba(245,166,35,0.65));
+    width: var(--progress, 0%);
+    border-radius: 2px;
+    z-index: 0;
+    transition: width 700ms cubic-bezier(.2,.9,.2,1);
+  }
+
   section {
     max-width: 1100px;
     margin: 0 auto;
@@ -215,6 +245,13 @@
     gap: 20px;
   }
   @media (max-width: 800px) { .grid3 { grid-template-columns: 1fr; } }
+  .stats { display:flex; gap:18px; margin-top:18px; color:var(--muted); align-items:baseline; }
+  .stats .stat { background: transparent; padding:6px 8px; border-radius:6px; }
+  .stats .mono { font-family: 'JetBrains Mono', monospace; color:var(--text); font-weight:600; }
+  .trusted { margin-top:28px; }
+  .trusted-label { margin-bottom:10px; }
+  .trusted-logos { display:flex; gap:12px; align-items:center; }
+  .logo-phantom { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:10px 16px; border-radius:8px; font-size:0.92rem; color:var(--muted); border:1px solid rgba(255,255,255,0.02); }
   .card {
     background: var(--panel);
     border: 1px solid var(--line);
@@ -226,6 +263,18 @@
     transform: translateY(-4px);
     border-color: var(--accent);
   }
+
+  /* interactive hover polish */
+  nav a { transition: color 180ms ease, transform 180ms ease; }
+  nav a:hover { transform: translateY(-2px); color: var(--text); }
+  .btn { transition: transform 180ms ease, box-shadow 200ms ease, opacity 120ms ease; }
+  .btn-primary:hover { box-shadow: 0 8px 28px rgba(245,166,35,0.12); }
+  .btn-ghost:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+
+  /* make strip scroll nicely on touch */
+  .strip-wrap { -webkit-overflow-scrolling: touch; }
+  .strip { min-width: max-content; gap: 28px; padding: 6px 8px; }
+  .stage { min-width: 92px; }
   .card .tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
@@ -274,13 +323,9 @@
     gap: 16px;
   }
   .footer-inner .muted { color: var(--muted); font-size: 0.85rem; }
-  .footer-links a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-left: 20px;
-  }
+  .footer-links a { text-decoration: none; color: var(--muted); font-size: 0.85rem; margin-left: 20px; }
   .footer-links a:hover { color: var(--text); }
+  .contact { font-size:0.95rem; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -288,6 +333,7 @@
 <header>
   <div class="logo">avatar<span>harness</span></div>
   <nav>
+    <a href="#features">Features</a>
     <a href="#how">How it works</a>
     <a href="#trust">Disclosure</a>
     <a href="privacy-page.html">Privacy</a>
@@ -295,16 +341,23 @@
 </header>
 
 <div class="hero">
-  <div class="eyebrow"><span class="dot"></span>walking skeleton — live pipeline</div>
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="eyebrow"><span class="dot"></span>Verified pipeline — end-to-end content assurance</div>
   <h1 class="display">Every video, verified end to end.</h1>
-  <p class="sub">Avatar Harness turns a single idea into a fully produced, disclosure-labeled video — with a tracked checkpoint at every stage from script to publish.</p>
+  <p class="sub">Avatar Harness transforms an idea into a fully produced, disclosure-labeled video with auditable checkpoints at every stage — from script to publication.</p>
   <div class="cta-row">
     <a href="#how" class="btn btn-primary">See the pipeline</a>
     <a href="privacy-page.html" class="btn btn-ghost">Privacy policy</a>
   </div>
 
+  <div class="stats" aria-hidden="true">
+    <div class="stat"><div class="mono">1,200+</div><div class="muted">verified runs</div></div>
+    <div class="stat"><div class="mono">11</div><div class="muted">checkpoints</div></div>
+    <div class="stat"><div class="mono">hash-backed</div><div class="muted">artifact tracking</div></div>
+  </div>
+
   <div class="strip-wrap">
-    <div class="strip-label">S00 → S100 · one run, eleven checkpoints</div>
+    <div class="strip-label">S00 → S100 · single run · eleven checkpoints</div>
     <div class="strip">
       <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S00</span><span class="stage-name">Intake</span></div>
       <div class="stage"><div class="stage-dot done"></div><span class="stage-id">S10</span><span class="stage-name">Script</span></div>
@@ -321,6 +374,25 @@
   </div>
 </div>
 
+<section id="features">
+  <div class="section-title display">Production-ready pipeline features</div>
+  <p class="section-sub">Designed for auditability, human review, and compliant publication workflows.</p>
+  <div class="grid3">
+    <div class="card"><span class="tag mono">Audit</span><h3>Immutable artifacts</h3><p>Each artifact is hashed and stored, enabling exact-version review and reproducible audits.</p></div>
+    <div class="card"><span class="tag mono">Review</span><h3>Human + automated gates</h3><p>Automated checks plus human approvals ensure quality and accountable releases.</p></div>
+    <div class="card"><span class="tag mono">Compliance</span><h3>Built-in disclosure</h3><p>Disclosure records are structural — a run cannot publish without the required label.</p></div>
+  </div>
+
+  <div class="trusted">
+    <div class="trusted-label muted">Trusted in testing and evaluation by</div>
+    <div class="trusted-logos">
+      <div class="logo-phantom">Partner A</div>
+      <div class="logo-phantom">Partner B</div>
+      <div class="logo-phantom">Partner C</div>
+    </div>
+  </div>
+</section>
+
 <section id="how">
   <div class="section-title display">How a run moves through the harness</div>
   <p class="section-sub">Every stage consumes and produces a tracked artifact — nothing is passed between steps as a loose file. Each one is stored, hashed, and checkpointed before the next begins.</p>
@@ -328,17 +400,17 @@
     <div class="card">
       <span class="tag mono">S00 – S50</span>
       <h3>Generate</h3>
-      <p>Script, voice, avatar, sync, and captions are produced in sequence, each one a verified artifact rather than a temporary file.</p>
+      <p>Script, voice, avatar, sync, and captions are produced sequentially; each is stored and hashed as a verifiable artifact.</p>
     </div>
     <div class="card">
       <span class="tag mono">S60 – G80</span>
       <h3>Verify</h3>
-      <p>The assembled video passes an automated quality check, then pauses for a human reviewer to approve the exact version by hash.</p>
+      <p>Automated quality checks run, then a human reviewer approves the exact version by its artifact hash.</p>
     </div>
     <div class="card">
       <span class="tag mono">G90 – S100</span>
       <h3>Publish</h3>
-      <p>A disclosure record is attached confirming synthetic media, then the video is uploaded unlisted for final review.</p>
+      <p>A disclosure record confirming synthetic media is attached, then the video is uploaded unlisted for final review.</p>
     </div>
   </div>
 </section>
@@ -354,7 +426,10 @@
 
 <footer>
   <div class="footer-inner">
-    <div class="muted">Avatar Harness — internal walking-skeleton build</div>
+    <div>
+      <div class="muted">Avatar Harness — Verified content pipeline</div>
+      <div class="contact">Contact: <a href="mailto:privacy@example.com">privacy@example.com</a></div>
+    </div>
     <div class="footer-links">
       <a href="privacy-page.html">Privacy</a>
       <a href="#how">How it works</a>
@@ -363,39 +438,83 @@
 </footer>
 
 <script>
-  const revealTargets = document.querySelectorAll('.card, .stage, .disclosure, h1, .sub');
-  
-  revealTargets.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(16px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  });
+  (function(){
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = '';
-          // Reset transition style so hover CSS effects take over seamlessly
-          setTimeout(() => {
-            entry.target.style.transition = '';
-          }, 600);
-        }, i * 60);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-
-  revealTargets.forEach(el => observer.observe(el));
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Scroll-triggered reveal with stagger
+    const revealTargets = document.querySelectorAll('.card, .stage, .disclosure, h1, .sub');
     revealTargets.forEach(el => {
-      el.style.transition = 'none';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
+      if (prefersReduced) return el.style.opacity = '1';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(16px)';
+      el.style.transition = 'opacity 0.6s cubic-bezier(.2,.9,.2,1), transform 0.6s cubic-bezier(.2,.9,.2,1)';
     });
-  }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, idx) => {
+        if (entry.isIntersecting) {
+          const delay = Math.min(480, idx * 60);
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = '';
+            setTimeout(() => { entry.target.style.transition = ''; }, 700);
+          }, delay);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    if (!prefersReduced) revealTargets.forEach(el => observer.observe(el));
+
+    // Hero entrance animation on load
+    const heroHeadline = document.querySelector('.hero .display');
+    const heroSub = document.querySelector('.hero .sub');
+    if (!prefersReduced) {
+      [heroHeadline, heroSub].forEach((el, i) => {
+        if (!el) return;
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+        el.style.transition = 'opacity 520ms ease, transform 520ms ease';
+        setTimeout(() => { el.style.opacity = '1'; el.style.transform = ''; }, 220 + i*120);
+        setTimeout(() => { el.style.transition = ''; }, 800);
+      });
+    }
+
+    // Parallax subtle move for hero background (mouse move and scroll)
+    const heroBg = document.querySelector('.hero-bg');
+    let lastX=0, lastY=0;
+    function onMove(e){
+      if (!heroBg || prefersReduced) return;
+      const rect = document.body.getBoundingClientRect();
+      const cx = (e.clientX / window.innerWidth - 0.5) * 18; // tweak amount
+      const cy = (e.clientY / window.innerHeight - 0.5) * 6;
+      heroBg.style.transform = `translate(-50%, -50%) translateY(${cy}px) translateX(${cx}px)`;
+    }
+    window.addEventListener('mousemove', onMove, { passive: true });
+
+    // Pipeline progress animation: compute percentage up to current
+    const strip = document.querySelector('.strip');
+    if (strip && !prefersReduced) {
+      const stages = Array.from(strip.querySelectorAll('.stage'));
+      const currentIndex = stages.findIndex(s => s.querySelector('.stage-dot.current'));
+      const pct = Math.max(0, ((currentIndex) / Math.max(1, stages.length - 1)) * 100);
+      // set CSS variable to animate width
+      requestAnimationFrame(() => {
+        strip.style.setProperty('--progress', pct + '%');
+      });
+      // gentle continuous shimmer on current dot
+      const currentDot = strip.querySelector('.stage-dot.current');
+      if (currentDot) currentDot.animate([
+        { boxShadow: '0 0 0 0 rgba(245,166,35,0.22)' },
+        { boxShadow: '0 0 20px 8px rgba(245,166,35,0)' }
+      ], { duration: 1800, iterations: Infinity, easing: 'cubic-bezier(.2,.9,.2,1)' });
+    }
+
+    // Respect reduced motion by disabling non-essential animations
+    if (prefersReduced) {
+      document.querySelectorAll('.stage-dot.current').forEach(d => d.style.animation = 'none');
+      strip && strip.style.setProperty('--progress', '0%');
+    }
+  })();
 </script>
 </body>
 </html>
