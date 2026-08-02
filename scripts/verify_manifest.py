@@ -50,9 +50,16 @@ def main() -> None:
         if stage.status.value == "passed":
             passed += 1
 
-    print()
-    print(f"{passed}/{len(manifest.stages)} stages passed")
+    # checkpoint_count goes HERE, after the loop
+    checkpoint_count = passed + 1  # +1 for G80 signal wait (no manifest row by design)
 
+    print()
+    print(f"{passed}/{len(manifest.stages)} stages passed")        
+    print(f"checkpoint_count: {checkpoint_count}/11")
+    if checkpoint_count >= 11:
+            print("M1 checkpoint requirement: MET")
+    else:
+            print(f"M1 checkpoint requirement: NOT MET ({checkpoint_count}/11)")
 
 if __name__ == "__main__":
     main()

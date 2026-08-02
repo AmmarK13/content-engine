@@ -15,6 +15,7 @@ with workflow.unsafe.imports_passed_through():
     from contracts.common.envelope import (
         ProviderDescriptorV1,
         StageEnvelopeV1,
+        ArtifactRefV1, 
     )
     from contracts.stages.g80_approval import HumanApprovalV1
 
@@ -42,8 +43,8 @@ def _build_envelope(
     run_id: str,
     artifact_refs: list[dict] | None = None,
     attempt: int = 1,
+    validation_ref: dict | None = None,   # ADD THIS
 ) -> dict:
-    """Build a minimal valid StageEnvelopeV1 for a stage call."""
     input_data = {"run_id": run_id, "stage_id": stage_id}
     input_hash = hashlib.sha256(
         json.dumps(input_data, sort_keys=True).encode()
@@ -54,7 +55,7 @@ def _build_envelope(
         attempt=attempt,
         input_hash=input_hash,
         artifact_refs=artifact_refs or [],
-        validation_ref=None,
+        validation_ref=ArtifactRefV1.model_validate(validation_ref) if validation_ref else None,  # ADD THIS
         provider=ProviderDescriptorV1(
             provider=capability,
             model="stub",
@@ -63,7 +64,6 @@ def _build_envelope(
         ),
     )
     return envelope.model_dump()
-
 
 @workflow.defn
 class AvatarPipeline:
@@ -107,7 +107,7 @@ class AvatarPipeline:
         """
         idea = json.loads(idea_json)
         run_id = idea.get("idea_request_id", "run_unknown")
-
+        last_validation_ref: dict | None = None
         # --- S00 through S70: sequential stage execution ---
         for stage_id, capability in STAGE_SEQUENCE[:8]:
             prior_artifact_refs: list[dict] = []
@@ -119,12 +119,14 @@ class AvatarPipeline:
                 capability,
                 run_id,
                 artifact_refs=prior_artifact_refs,
+                validation_ref=last_validation_ref
             )
             output_dict = await workflow.execute_activity(
                 "run_stage",
                 args=[capability,envelope_dict, run_id,run_id,],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
+            last_validation_ref = output_dict.pop("_validation_ref", None)
             self._stage_outputs[stage_id] = output_dict
             
             # Record current master video hash from S60 assembly output if available
@@ -154,12 +156,14 @@ class AvatarPipeline:
                 capability,
                 run_id,
                 artifact_refs=prior_artifact_refs,
+                validation_ref=last_validation_ref,
             )
             output_dict = await workflow.execute_activity(
                 "run_stage",
                 args=[capability,envelope_dict, run_id,run_id,],
                 start_to_close_timeout=STAGE_TIMEOUT,
             )
+            last_validation_ref = output_dict.pop("_validation_ref", None)
             self._stage_outputs[stage_id] = output_dict
             workflow.logger.info(f"Stage {stage_id} completed")
 

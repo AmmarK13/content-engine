@@ -2,39 +2,53 @@
 orchestrator/stage_executor.py
 
 Wraps a provider's run() call with manifest persistence and telemetry
-recording. Does NOT call put_artifact() itself - providers are responsible
-for storing their own artifacts and returning real ArtifactRefV1 objects
-in their StageOutputV1. Calling put_artifact() again here would duplicate
-artifacts already stored by the provider.
+recording. Does NOT call put_artifact() itself for provider artifacts -
+providers are responsible for storing their own artifacts and returning
+real ArtifactRefV1 objects in their StageOutputV1.
+
+The executor does call put_artifact once per stage to store the
+ValidationReportV1 — this is the executor's own responsibility, not
+the provider's.
 """
 
 import hashlib
+import json
 from datetime import datetime, timezone
 
-from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
+from contracts.common.envelope import ArtifactRefV1, StageEnvelopeV1, StageOutputV1, ValidationReportV1
 from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.common.telemetry import StageRunRecordV1
 from orchestrator.manifest_store import save_stage_record
 from orchestrator.registry import get as get_provider
-from orchestrator.storage import get_artifact
+from orchestrator.storage import get_artifact, put_artifact
 from orchestrator.telemetry import record_telemetry
 
 
-def _verify_artifact_hashes(output: StageOutputV1) -> None:
+def _verify_artifact_hashes(output: StageOutputV1, stage_id: str) -> ValidationReportV1:
     """
     Checkpoint step: re-fetch every artifact the provider claims to have
     stored, recompute its SHA-256, and confirm it matches ref.hash before
-    anything gets persisted. A provider can only claim a stage passed once
-    what's actually in storage is verified to match its own reference.
+    anything gets persisted. Returns a ValidationReportV1 recording the
+    result. A stage cannot be marked PASSED until this report exists and
+    passed=True.
     """
+    failures = []
     for ref in output.artifact_refs:
-        stored_bytes = get_artifact(ref)
-        actual_hash = hashlib.sha256(stored_bytes).hexdigest()
-        if actual_hash != ref.hash:
-            raise ValueError(
-                f"Hash mismatch for artifact {ref.artifact_id}: "
-                f"expected {ref.hash}, got {actual_hash}"
-            )
+        try:
+            stored_bytes = get_artifact(ref)
+            actual_hash = hashlib.sha256(stored_bytes).hexdigest()
+            if actual_hash != ref.hash:
+                failures.append(
+                    f"Hash mismatch for {ref.artifact_id}: expected {ref.hash}, got {actual_hash}"
+                )
+        except Exception as exc:
+            failures.append(f"Could not fetch artifact {ref.artifact_id}: {exc}")
+
+    return ValidationReportV1(
+        passed=len(failures) == 0,
+        failures=failures,
+        stage_id=stage_id,
+    )
 
 
 def execute_stage(
@@ -42,20 +56,35 @@ def execute_stage(
     idea_request_id: str,
     capability: str,
     envelope: StageEnvelopeV1,
-) -> StageOutputV1:
+) -> tuple[StageOutputV1, ArtifactRefV1]:
     """
     Run one stage's provider, verify its output artifacts against storage,
-    then record both the manifest row and the telemetry row for this
-    execution. Artifact storage itself is the provider's own responsibility
-    - this function only reads back and verifies what the provider already
-    stored, it never calls put_artifact.
+    store a ValidationReportV1 to MinIO, then record both the manifest row
+    and the telemetry row for this execution.
+
+    Returns (output, validation_ref) so the pipeline can pass validation_ref
+    into the next stage's envelope.
     """
     started_at = datetime.now(timezone.utc)
 
     provider = get_provider(capability)
     output: StageOutputV1 = provider.run(envelope)
 
-    _verify_artifact_hashes(output)
+    # Checkpoint promotion: hash verification must pass before PASSED is written
+    validation_report = _verify_artifact_hashes(output, envelope.stage_id)
+
+    if not validation_report.passed:
+        raise ValueError(
+            f"Stage {envelope.stage_id} failed hash verification: {validation_report.failures}"
+        )
+
+    
+    report_bytes = validation_report.model_dump_json().encode("utf-8")
+    validation_ref = put_artifact(
+        data=report_bytes,
+        artifact_id=f"validation_{envelope.stage_id}_attempt{envelope.attempt}",
+        mime_type="application/json",
+    )
 
     ended_at = datetime.now(timezone.utc)
 
@@ -84,4 +113,4 @@ def execute_stage(
     )
     record_telemetry(telemetry_record)
 
-    return output
+    return output, validation_ref

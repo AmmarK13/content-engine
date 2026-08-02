@@ -11,10 +11,9 @@ async def run_stage(
     run_id: str,
     idea_request_id: str,
 ) -> dict:
-    """
-    Validate the envelope, run the stage through execute_stage (which
-    handles manifest + telemetry recording), return the output as a dict.
-    """
     envelope = StageEnvelopeV1.model_validate(envelope_dict)
-    output = execute_stage(run_id, idea_request_id, capability, envelope)
-    return output.model_dump()
+    output, validation_ref = execute_stage(run_id, idea_request_id, capability, envelope)
+    result = output.model_dump()
+    # Pass validation_ref back so the pipeline can attach it to the next envelope
+    result["_validation_ref"] = validation_ref.model_dump()
+    return result
