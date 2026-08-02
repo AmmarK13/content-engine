@@ -26,6 +26,11 @@ from orchestrator.registry import register_all_stubs
 
 # Register stubs - add more here as other team members' stubs land
 #register(StubScriptProvider())  removing it from here since reigster stub call all. 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 TEMPORAL_HOST = "localhost:7233"
 
