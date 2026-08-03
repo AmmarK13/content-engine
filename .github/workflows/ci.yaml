@@ -76,6 +76,10 @@ jobs:
             -d content_engine \
             -f sql/create_manifest_stage_records.sql
 
+          psql -h localhost -U temporal -d content_engine -f sql/create_manifest_stage_records.sql
+          
+          psql -h localhost -U temporal -d content_engine -f sql/create_stage_run_records.sql
+
       - name: Run tests
         run: uv run pytest tests/ -v
 
