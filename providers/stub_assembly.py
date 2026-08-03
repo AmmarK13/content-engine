@@ -8,12 +8,9 @@ black-screen video fixture, persists it as a real artifact through
 storage.py, and records a PASSED stage entry in the production manifest.
 """
 
-from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
-from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.stages.idea_request import Modality
 from contracts.stages.s60_assembly import MasterVideoV1
 from orchestrator.storage import put_artifact
@@ -27,14 +24,7 @@ class StubAssemblyProvider:
 
     capability: str = "assembly"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
-        payload_dict: dict[str, Any] = (
-            getattr(envelope, "payload", {})
-            if hasattr(envelope, "payload")
-            else {}
-        )
-
-        run_id = payload_dict.get("run_id", "run_stub")
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
 
         video_bytes = FIXTURE_VIDEO.read_bytes()
 
@@ -43,7 +33,6 @@ class StubAssemblyProvider:
             artifact_id=f"master_video_{run_id}",
             mime_type="video/mp4",
         )
-
 
         master_video = MasterVideoV1(
             run_id=run_id,

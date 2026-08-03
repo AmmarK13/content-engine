@@ -84,7 +84,7 @@ def test_stub_assembly():
     provider = StubAssemblyProvider()
 
     output = provider.run(
-        make_envelope("S60", provider.capability)
+        make_envelope("S60", provider.capability), "test_run_001"
     )
 
     assert len(output.artifact_refs) == 1

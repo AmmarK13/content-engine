@@ -7,12 +7,8 @@ Verifies the disclosure decision and privacy setting before returning a
 dry-run PublishReceiptV1. Even as a stub, these checks are not skipped -
 they are part of what M1's pass/fail test verifies.
 
-Design note (flag at standup): full envelope construction is Day 3 work,
-and StageEnvelopeV1 has no run_id field yet. Until real wiring lands, this
-stub looks for a disclosure-decision artifact among envelope.artifact_refs
-(identified by artifact_id containing "disclosure") and derives run_id from
-that artifact's id. This is a stub-only convention, not a contract change -
-confirm with the team once Day 3 envelope wiring is in place.
+Design note: publish verifies disclosure content and privacy policy even in
+stub mode to preserve behavioral checks expected by M1 validation.
 """
 
 import json
@@ -30,7 +26,7 @@ class StubPublishProvider:
 
     capability: str = "publish"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
         disclosure_ref = next(
             (ref for ref in envelope.artifact_refs if "disclosure" in ref.artifact_id.lower()),
             None,
@@ -51,8 +47,6 @@ class StubPublishProvider:
             )
 
         assert TARGET_PRIVACY == "unlisted", "M1 only supports unlisted uploads"
-
-        run_id = disclosure_ref.artifact_id
 
         receipt = PublishReceiptV1(
             run_id=run_id,
