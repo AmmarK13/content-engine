@@ -19,6 +19,7 @@ with workflow.unsafe.imports_passed_through():
     )
     from contracts.stages.g80_approval import HumanApprovalV1
     from graph.pipeline_graph import STAGE_SEQUENCE
+import asyncio
 
 TASK_QUEUE = "avatar-harness"
 STAGE_TIMEOUT = timedelta(minutes=5)
@@ -132,7 +133,12 @@ class AvatarPipeline:
 
         # --- G80: durable wait for human approval ---
         workflow.logger.info("Waiting for approval signal (G80)...")
-        await workflow.wait_condition(lambda: self._approval is not None)
+        try:
+            await workflow.wait_condition(lambda: self._approval is not None,timeout=timedelta(minutes=30))
+        except asyncio.TimeoutError:
+            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal recieved")
+            raise
+        
         workflow.logger.info(f"Approval received: {self._approval}")
 
         # --- G90 + S100: disclosure check then publish ---
