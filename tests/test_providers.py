@@ -342,14 +342,27 @@ def test_stub_script_provider_run():
         ),
     )
 
-    output = provider.run(envelope)
+    run_id = "run_test_s10"
+
+    mock_artifact_ref = ArtifactRefV1(
+        artifact_id="test_script_001",
+        path="s3://avatar-harness-poc/artifacts/test_script.json",
+        hash="d" * 64,
+        mime_type="application/json",
+    )
+
+    with patch("providers.stub_script.put_artifact") as mock_put:
+        mock_put.return_value = mock_artifact_ref
+
+        mock_put.assert_called_once()
+        output = provider.run(envelope, run_id)
 
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("stub") is True
 
     # Validate output payload against real M0 ScriptPackageV1 contract
     script_pkg = ScriptPackageV1.model_validate(output.payload)
-    assert script_pkg.run_id == "run_stub_s10"
+    assert script_pkg.run_id == run_id
     assert len(script_pkg.scenes) == 3
     assert script_pkg.scenes[0] == "Welcome to this AI avatar demonstration."
 
