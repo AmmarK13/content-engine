@@ -110,3 +110,53 @@ def test_save_stage_record():
     assert loaded_stage.status == StageStatus.RUNNING
     assert loaded_stage.attempt == 1
     assert loaded_stage.output_artifact_ids == ["artifact_updated"]
+
+
+def test_load_manifest_sorts_rows_by_canonical_stage_order(monkeypatch):
+    run_id = "run_test"
+
+    rows = [
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "G90", "passed", 1, None, None, []),
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "S00", "passed", 1, None, None, []),
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "G80", "running", 1, None, None, []),
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "S70", "passed", 1, None, None, []),
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "S10", "running", 2, None, None, []),
+        ("idea_001", datetime(2026, 8, 3, 12, 0, tzinfo=UTC), "S10", "passed", 1, None, None, []),
+    ]
+
+    class FakeCursor:
+        def __init__(self):
+            self.executed = None
+
+        def execute(self, query, params):
+            self.executed = (query, params)
+
+        def fetchall(self):
+            return rows
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class FakeConnection:
+        def __init__(self):
+            self.cursor_obj = FakeCursor()
+
+        def cursor(self):
+            return self.cursor_obj
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    fake_connection = FakeConnection()
+    monkeypatch.setattr("orchestrator.manifest_store.get_connection", lambda: fake_connection)
+
+    manifest = load_manifest(run_id)
+
+    assert [stage.stage_id for stage in manifest.stages] == ["S00", "S10", "S10", "S70", "G80", "G90"]
+    assert [stage.attempt for stage in manifest.stages] == [1, 1, 2, 1, 1, 1]
