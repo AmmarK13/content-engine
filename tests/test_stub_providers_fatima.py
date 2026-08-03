@@ -50,7 +50,7 @@ def test_stub_intake():
     provider = StubIntakeProvider()
 
     output = provider.run(
-        make_envelope("S00", provider.capability)
+        make_envelope("S00", provider.capability), "test_run_001"
     )
 
     assert len(output.artifact_refs) == 1
@@ -60,7 +60,7 @@ def test_stub_intake():
     stored = get_artifact(artifact)
 
     assert stored
-    assert output.payload["idea_request_id"] == "run_stub"
+    assert output.payload["idea_request_id"] == "test_run_001"
 
 
 def test_stub_captions():
