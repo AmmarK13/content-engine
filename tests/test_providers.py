@@ -354,8 +354,6 @@ def test_stub_script_provider_run():
     with patch("providers.stub_script.put_artifact") as mock_put:
         mock_put.return_value = mock_artifact_ref
 
-        output = provider.run(envelope, run_id)
-
         mock_put.assert_called_once()
         output = provider.run(envelope, run_id)
 
