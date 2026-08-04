@@ -19,6 +19,8 @@ from orchestrator.registry import register_all_stubs
 import asyncio
 from temporalio.worker import Worker
 from orchestrator.activities import run_stage,record_g80_approval
+from contracts.stages.idea_request import IdeaRequestV1, Modality
+from orchestrator.consent_gate import validate_run   # <- add this line
 
 
 TEMPORAL_HOST = "localhost:7233"
@@ -238,6 +240,7 @@ def main():
         voice_id=config.get("voice_id", "voice_001"),
         style_id=config.get("style_id"),
     )
+    validate_run(idea)
 
     print(f"\n{'='*60}")
     print(f"AVATAR HARNESS — run")
