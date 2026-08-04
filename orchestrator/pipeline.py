@@ -96,8 +96,7 @@ class AvatarPipeline:
         """
         idea = json.loads(idea_json)
         if "idea_request_id" not in idea:
-            raise ValueError(f" idea_request_id field is missing from idea payload {idea}")
-        run_id = idea["idea_request_id"]
+            raise ValueError("idea_request_id field is missing from idea payload")
         last_validation_ref: dict | None = None
         # --- S00 through S70: sequential stage execution ---
         for stage_id, capability in STAGE_SEQUENCE[:8]:
@@ -137,7 +136,7 @@ class AvatarPipeline:
         try:
             await workflow.wait_condition(lambda: self._approval is not None,timeout=timedelta(minutes=30))
         except asyncio.TimeoutError:
-            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal recieved")
+            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal received")
             raise
 
         workflow.logger.info(f"Approval received: {self._approval}")
