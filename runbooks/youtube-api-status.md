@@ -13,9 +13,9 @@ Real YouTube uploads remain blocked pending Google's audit/review decision for s
 
 ## Submission Details
 
-- Google Cloud project ID: Not yet documented in repository records
-- Submission date: Not yet documented in repository records
-- Google reference/case number: Not yet documented in repository records
+- Google Cloud project ID: content-engine-youtube-504414
+- Submission date: Not yet submitted — blocked on landing page deployment (PR merged, pending ownership transfer to shehryarR and Netlify deploy)
+- Google reference/case number: Not yet issued — assigned after submission
 
 ## Evidence In Repo
 
