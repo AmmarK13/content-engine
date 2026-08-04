@@ -16,6 +16,12 @@ from contracts.stages.idea_request import IdeaRequestV1, Modality
 from orchestrator.manifest_store import load_manifest
 from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.registry import register_all_stubs
+import asyncio
+from temporalio.worker import Worker
+from orchestrator.activities import run_stage,record_g80_approval
+from contracts.stages.idea_request import IdeaRequestV1, Modality
+from orchestrator.consent_gate import validate_run   
+
 
 TEMPORAL_HOST = "localhost:7233"
 
@@ -24,9 +30,6 @@ TEMPORAL_HOST = "localhost:7233"
 
 def _run_worker():
     """Start the Temporal worker in a daemon thread."""
-    import asyncio
-    from temporalio.worker import Worker
-    from orchestrator.activities import run_stage
 
     async def _worker_main():
         register_all_stubs()
@@ -237,6 +240,7 @@ def main():
         voice_id=config.get("voice_id", "voice_001"),
         style_id=config.get("style_id"),
     )
+    validate_run(idea)
 
     print(f"\n{'='*60}")
     print(f"AVATAR HARNESS — run")

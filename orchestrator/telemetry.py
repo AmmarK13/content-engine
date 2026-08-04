@@ -29,24 +29,30 @@ def record_telemetry(record: StageRunRecordV1) -> None:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO stage_run_records (
-                    run_id,
-                    stage_id,
-                    attempt,
-                    input_hash,
-                    output_hash,
-                    provider_name,
-                    provider_model,
-                    provider_version,
-                    provider_capability,
-                    provider_endpoint,
-                    provider_cost,
-                    provider_latency_ms,
-                    started_at,
-                    ended_at
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
+                    INSERT INTO stage_run_records (
+                        run_id,
+                        stage_id,
+                        attempt,
+                        input_hash,
+                        output_hash,
+                        provider_name,
+                        provider_model,
+                        provider_version,
+                        provider_capability,
+                        provider_endpoint,
+                        provider_cost,
+                        provider_latency_ms,
+                        started_at,
+                        ended_at
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (run_id, stage_id, attempt)
+                    DO UPDATE SET
+                        output_hash = EXCLUDED.output_hash,
+                        ended_at = EXCLUDED.ended_at,
+                        provider_cost = EXCLUDED.provider_cost,
+                        provider_latency_ms = EXCLUDED.provider_latency_ms
+                    """,
                 (
                     record.run_id,
                     record.stage_id,

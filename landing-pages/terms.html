@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — Avatar Harness</title>
+<title>Terms of Service — Avatar Harness</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -92,13 +92,6 @@
     padding: 24px;
     margin-top: 40px;
   }
-  .card .label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--accent-cyan);
-    margin-bottom: 6px;
-    display: block;
-  }
 </style>
 </head>
 <body>
@@ -116,28 +109,31 @@
 </header>
 
 <main>
-  <div class="eyebrow">Legal & Data Governance</div>
-  <h1>Privacy Policy</h1>
-  <p class="updated">Last Updated: August 2026</p>
+  <div class="eyebrow">Public Policy</div>
+  <h1>Terms of Service</h1>
+  <p class="updated">Effective Date: August 2026</p>
 
-  <p>Avatar Harness ("we," "our," or "platform") operates as an automated video generation and auditing pipeline. This Privacy Policy outlines how operational data and third-party authentication tokens are processed within our systems.</p>
+  <p>By accessing or deploying the Avatar Harness software pipeline, you agree to comply with these Terms of Service. Please read them thoroughly before executing media pipeline runs.</p>
 
-  <h2>1. Information We Access and Process</h2>
-  <p>To integrate directly with video hosting networks, Avatar Harness requests access to account credentials via OAuth protocol:</p>
+  <h2>1. Platform Scope and Operation</h2>
+  <p>Avatar Harness provides automated verification, assembly, and automated dispatch infrastructure for digital video content. All outputs passing through the system are evaluated against cryptographic audit steps prior to publication.</p>
+
+  <h2>2. Permitted Use and Acceptable Content</h2>
+  <p>Users are strictly prohibited from utilizing Avatar Harness to create, process, or publish:</p>
   <ul>
-    <li><strong>YouTube OAuth Credentials:</strong> Access tokens obtained via the YouTube Data API v3 are used exclusively to upload, catalog, and label synthetic videos generated through our pipeline.</li>
-    <li><strong>Temporary Token Storage:</strong> Tokens are held temporarily in memory during active execution jobs and are automatically invalidated upon session teardown. No authorization tokens are saved to persistent third-party databases.</li>
+    <li>Non-consensual deepfake media or impersonation of private individuals without legal authorization.</li>
+    <li>Deceptive media designed to disrupt elections, violate legal copyright, or circumvent platform regulations.</li>
+    <li>Content designed to bypass mandatory synthetic media disclosures.</li>
   </ul>
 
-  <h2>2. Data Usage and Third-Party Sharing</h2>
-  <p>We adhere to strict data minimization practices. We do not sell, license, or share user identity metrics or OAuth data with advertising networks, third-party brokers, or external data aggregators.</p>
+  <h2>3. Third-Party API Terms</h2>
+  <p>Integration with platforms like YouTube requires adherence to their respective terms. Users implicitly agree to be bound by YouTube's Terms of Service and Google's Security Guidelines when connecting account credentials.</p>
 
-  <h2>3. Synthetic Media Compliance</h2>
-  <p>In adherence to Google and YouTube API policies, all media processed by the platform carrying synthetic voice or avatar components is hard-coded to trigger the compulsory <code>syntheticMediaDisclosure</code> flag during upload transmission.</p>
+  <h2>4. Limitation of Liability</h2>
+  <p>Avatar Harness is provided "as is" without express warranties. The platform is not liable for system interruptions, network API failures, or unauthorized access stemming from client-side credential misconfigurations.</p>
 
   <div class="card">
-    <span class="label">PRIVACY CONTACT</span>
-    <p style="margin:0; color: var(--text);">Direct inquiries to: <a href="mailto:privacy@avatarharness.io" style="color: var(--accent-cyan); text-decoration: none;">privacy@avatarharness.io</a></p>
+    <p style="margin:0; color: var(--text);">For questions regarding these Terms, contact our legal team at <a href="mailto:legal@avatarharness.io" style="color: var(--accent-cyan); text-decoration: none;">legal@avatarharness.io</a>.</p>
   </div>
 </main>
 
