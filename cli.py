@@ -16,6 +16,10 @@ from contracts.stages.idea_request import IdeaRequestV1, Modality
 from orchestrator.manifest_store import load_manifest
 from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.registry import register_all_stubs
+import asyncio
+from temporalio.worker import Worker
+from orchestrator.activities import run_stage,record_g80_approval
+
 
 TEMPORAL_HOST = "localhost:7233"
 
@@ -24,9 +28,6 @@ TEMPORAL_HOST = "localhost:7233"
 
 def _run_worker():
     """Start the Temporal worker in a daemon thread."""
-    import asyncio
-    from temporalio.worker import Worker
-    from orchestrator.activities import run_stage
 
     async def _worker_main():
         register_all_stubs()
@@ -35,7 +36,7 @@ def _run_worker():
             client,
             task_queue=TASK_QUEUE,
             workflows=[AvatarPipeline],
-            activities=[run_stage],
+            activities=[run_stage, record_g80_approval],
         )
         print("[worker] Started on task queue: avatar-harness")
         await worker.run()
@@ -81,7 +82,7 @@ async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
                         return run_id
         except Exception:
             pass
-        time.sleep(2)
+        await asyncio.sleep(2)
     raise TimeoutError("Timed out waiting for G80 pause")
 
 
@@ -225,7 +226,7 @@ def main():
         config = yaml.safe_load(f)
 
     topic = args.idea or config.get("topic", "M1 walking skeleton")
-    run_id = config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = args.run_id or config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     modality = Modality(config.get("modality", "AVATAR"))
     identity_id = config.get("identity_id") if modality == Modality.AVATAR else None
 
