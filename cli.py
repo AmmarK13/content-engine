@@ -225,7 +225,7 @@ def main():
         config = yaml.safe_load(f)
 
     topic = args.idea or config.get("topic", "M1 walking skeleton")
-    run_id = config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = args.run_id or config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     modality = Modality(config.get("modality", "AVATAR"))
     identity_id = config.get("identity_id") if modality == Modality.AVATAR else None
 
