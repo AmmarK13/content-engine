@@ -136,7 +136,7 @@ class AvatarPipeline:
         try:
             await workflow.wait_condition(lambda: self._approval is not None,timeout=timedelta(minutes=30))
         except asyncio.TimeoutError:
-            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal recieved")
+            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal received")
             raise
 
         workflow.logger.info(f"Approval received: {self._approval}")
