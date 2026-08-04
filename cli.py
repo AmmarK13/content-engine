@@ -26,7 +26,7 @@ def _run_worker():
     """Start the Temporal worker in a daemon thread."""
     import asyncio
     from temporalio.worker import Worker
-    from orchestrator.activities import run_stage, record_g80_approval
+    from orchestrator.activities import run_stage
 
     async def _worker_main():
         register_all_stubs()
