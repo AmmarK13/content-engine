@@ -44,5 +44,22 @@ def register_all_stubs() -> None:
     register(StubDisclosureProvider())
     register(StubPublishProvider())
 
+def try_register_real_providers() -> list[str]:
+    """
+    Attempt to register real providers where API keys are configured.
+    Returns list of capabilities that registered real providers.
+    """
+    real = []
+    try:
+        from orchestrator.provider_config import load_provider_config
+        cfg = load_provider_config('script_generation')
+        if cfg.get('api_key'):
+            from providers.gemini_script import GeminiScriptProvider
+            register(GeminiScriptProvider())
+            real.append('script_generation')
+    except Exception as e:
+        print(f'[registry] script_generation real provider unavailable: {e}')
+    return real
+
 # Auto-register stubs when this module is imported
 register_all_stubs()
