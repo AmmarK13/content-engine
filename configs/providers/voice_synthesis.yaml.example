@@ -1,0 +1,3 @@
+api_key: YOUR_ELEVENLABS_API_KEY_HERE
+model_id: eleven_multilingual_v2
+voice_id_override: null

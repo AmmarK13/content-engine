@@ -1,17 +1,35 @@
-import yaml
-from pathlib import Path
-from typing import Dict, Any
+"""
+orchestrator/provider_config.py
 
-def load_provider_config(capability: str) -> Dict[str, Any]:
+Loads per-capability provider configuration (API keys, model IDs,
+endpoint URLs). Priority: environment variables > configs/providers/
+<capability>.yaml > defaults. Real values (API keys) must never be
+committed — see configs/providers/*.yaml in .gitignore.
+"""
+
+import os
+from pathlib import Path
+
+import yaml
+
+
+def load_provider_config(capability: str) -> dict:
     """
-    Loads provider configuration from configs/providers/{capability}.yaml
-    Returns an empty dict if the file does not exist.
+    Load configuration for a provider capability.
+    Priority: environment variables > configs/providers/<capability>.yaml > defaults.
     """
-    project_root = Path(__file__).parent.parent
-    config_path = project_root / 'configs' / 'providers' / f'{capability}.yaml'
-    
-    if not config_path.exists():
-        return {}
-        
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f) or {}
+    config = {}
+
+    config_path = Path("configs/providers") / f"{capability}.yaml"
+    if config_path.exists():
+        with open(config_path) as f:
+            config = yaml.safe_load(f) or {}
+
+    # Environment variables override YAML
+    prefix = capability.upper().replace("-", "_")
+    for key in list(config.keys()):
+        env_key = f"{prefix}_{key.upper()}"
+        if env_key in os.environ:
+            config[key] = os.environ[env_key]
+
+    return config
