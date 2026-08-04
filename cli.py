@@ -15,7 +15,7 @@ from datetime import datetime
 from contracts.stages.idea_request import IdeaRequestV1, Modality
 from orchestrator.manifest_store import load_manifest
 from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
-from orchestrator.registry import register_all_stubs
+from orchestrator.registry import register_all_stubs, try_register_real_providers
 
 TEMPORAL_HOST = "localhost:7233"
 
@@ -30,6 +30,7 @@ def _run_worker():
 
     async def _worker_main():
         register_all_stubs()
+        try_register_real_providers()
         client = await Client.connect(TEMPORAL_HOST)
         worker = Worker(
             client,

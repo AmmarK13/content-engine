@@ -22,7 +22,7 @@ from providers.stub_script import StubScriptProvider
 
 from orchestrator.activities import run_stage, record_g80_approval
 from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
-from orchestrator.registry import register_all_stubs
+from orchestrator.registry import register_all_stubs, try_register_real_providers
 
 # Register stubs - add more here as other team members' stubs land
 #register(StubScriptProvider())  removing it from here since reigster stub call all. 
@@ -37,6 +37,7 @@ TEMPORAL_HOST = "localhost:7233"
 async def main():
     
     register_all_stubs()
+    try_register_real_providers()
     
     client = await Client.connect("localhost:7233")
     
