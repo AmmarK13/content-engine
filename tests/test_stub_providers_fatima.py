@@ -67,7 +67,7 @@ def test_stub_captions():
     provider = StubCaptionsProvider()
 
     output = provider.run(
-        make_envelope("S50", provider.capability)
+        make_envelope("S50", provider.capability),"test_run_001"
     )
 
     assert len(output.artifact_refs) == 1
@@ -78,13 +78,14 @@ def test_stub_captions():
 
     assert stored
     assert output.payload["word_count"] == 4
+    assert output.payload["run_id"] == "test_run_001" 
 
 
 def test_stub_assembly():
     provider = StubAssemblyProvider()
 
     output = provider.run(
-        make_envelope("S60", provider.capability)
+        make_envelope("S60", provider.capability), "test_run_001"
     )
 
     assert len(output.artifact_refs) == 1
@@ -96,3 +97,4 @@ def test_stub_assembly():
     assert stored
     assert output.payload["scene_count"] == 3
     assert output.payload["duration_seconds"] == 5.0
+    assert output.payload["run_id"] == "test_run_001"

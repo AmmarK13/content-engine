@@ -115,7 +115,7 @@ def test_voice_provider_run(voice_provider, sample_envelope, mock_artifact_ref):
         register(voice_provider)
 
         # Run the provider
-        output = voice_provider.run(sample_envelope)
+        output = voice_provider.run(sample_envelope,"test_run_s20")
 
         # Check output structure
         assert isinstance(output, StageOutputV1)
@@ -163,7 +163,8 @@ def test_avatar_provider_run(avatar_provider, sample_envelope, mock_video_ref):
         # Modify envelope for avatar stage
         sample_envelope.stage_id = "S30"
 
-        output = avatar_provider.run(sample_envelope)
+        output = avatar_provider.run(sample_envelope, "test_run_s30")
+
 
         assert isinstance(output, StageOutputV1)
         assert "run_id" in output.payload
@@ -195,7 +196,7 @@ def test_sync_provider_run_with_existing_artifact(sync_provider, sample_envelope
     sample_envelope.artifact_refs = [mock_video_ref]
     sample_envelope.stage_id = "S40"
 
-    output = sync_provider.run(sample_envelope)
+    output = sync_provider.run(sample_envelope, "test_run_s40")
 
     assert isinstance(output, StageOutputV1)
     assert "run_id" in output.payload
@@ -225,7 +226,7 @@ def test_sync_provider_run_fallback(sync_provider, sample_envelope, mock_video_r
         sample_envelope.artifact_refs = []
         sample_envelope.stage_id = "S40"
 
-        output = sync_provider.run(sample_envelope)
+        output = sync_provider.run(sample_envelope, "test_run_s40")
         
         assert output.metadata["provider"] == "stub_sync"
         assert "media_artifact" in output.payload
@@ -258,7 +259,7 @@ def test_voice_provider_artifact_persistence(voice_provider, sample_envelope, mo
     with patch("providers.stub_voice.put_artifact") as mock_put:
         mock_put.return_value = mock_artifact_ref
 
-        output = voice_provider.run(sample_envelope)
+        output = voice_provider.run(sample_envelope,"test_run_s20")
 
         # Verify put_artifact was called with correct args
         assert mock_put.called
@@ -283,7 +284,7 @@ def test_avatar_provider_artifact_persistence(avatar_provider, sample_envelope, 
     with patch("providers.stub_avatar.put_artifact") as mock_put:
         mock_put.return_value = mock_video_ref
 
-        output = avatar_provider.run(sample_envelope)
+        output = avatar_provider.run(sample_envelope, "test_run_s30")
 
         # Verify put_artifact was called with correct args
         assert mock_put.called
@@ -310,7 +311,7 @@ def test_sync_provider_copies_artifact(sync_provider, sample_envelope, mock_vide
     sample_envelope.artifact_refs = [mock_video_ref, mock_video_ref2]
     sample_envelope.stage_id = "S40"
 
-    output = sync_provider.run(sample_envelope)
+    output = sync_provider.run(sample_envelope, "test_run_s40")
     
     # Should use the first video artifact
     sync_media = SynchronizedMediaV1(**output.payload)
@@ -388,7 +389,7 @@ def test_stub_qc_provider_satisfies_protocol_and_runs():
         ),
     )
 
-    output = provider.run(envelope)
+    output = provider.run(envelope, "test_run_s70")
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("passed") is True
 
@@ -417,7 +418,7 @@ def test_stub_disclosure_provider_satisfies_protocol_and_runs():
         ),
     )
 
-    output = provider.run(envelope)
+    output = provider.run(envelope, "test_run_g90")
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("contains_synthetic_media") is True
 

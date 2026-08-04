@@ -25,7 +25,7 @@ class StubDisclosureProvider:
 
     capability: str = "disclosure_check"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
         payload_dict: dict[str, Any] = getattr(envelope, "payload", {}) if hasattr(envelope, "payload") else {}
         master_video_hash = payload_dict.get("master_video_hash", "a" * 64)
         modality_val = payload_dict.get("modality", Modality.AVATAR)

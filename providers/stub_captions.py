@@ -9,10 +9,9 @@ captions JSON artifact through storage.py.
 
 import json
 from datetime import UTC, datetime
-from typing import Any
+
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
-from contracts.common.manifest import StageRecordV1, StageStatus
 from contracts.stages.s50_captions import CaptionTrackV1
 from orchestrator.storage import put_artifact
 
@@ -22,15 +21,8 @@ class StubCaptionsProvider:
 
     capability: str = "caption_generation"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
-        payload_dict: dict[str, Any] = (
-            getattr(envelope, "payload", {})
-            if hasattr(envelope, "payload")
-            else {}
-        )
-
-        run_id = payload_dict.get("run_id", "run_stub")
-
+    def run(self, envelope: StageEnvelopeV1,run_id) -> StageOutputV1:
+        
         captions = {
             "words": [
                 {"text": "Hello", "start": 0.0, "end": 0.4},

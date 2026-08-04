@@ -22,9 +22,8 @@ class StubQCProvider:
 
     capability: str = "quality_control"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
         payload_dict: dict[str, Any] = getattr(envelope, "payload", {}) if hasattr(envelope, "payload") else {}
-        run_id = payload_dict.get("run_id", "run_stub_s70")
         master_video_hash = payload_dict.get("master_video_hash", "a" * 64)
 
         qc_report = QualityReportV1(

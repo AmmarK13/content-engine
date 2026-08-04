@@ -30,7 +30,7 @@ class StubPublishProvider:
 
     capability: str = "publish"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
         disclosure_ref = next(
             (ref for ref in envelope.artifact_refs if "disclosure" in ref.artifact_id.lower()),
             None,

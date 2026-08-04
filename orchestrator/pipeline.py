@@ -133,13 +133,20 @@ class AvatarPipeline:
 
         # --- G80: durable wait for human approval ---
         workflow.logger.info("Waiting for approval signal (G80)...")
+        g80_started_at = workflow.now()
         try:
             await workflow.wait_condition(lambda: self._approval is not None,timeout=timedelta(minutes=30))
         except asyncio.TimeoutError:
             workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal recieved")
             raise
-        
+
         workflow.logger.info(f"Approval received: {self._approval}")
+
+        await workflow.execute_activity(
+            "record_g80_approval",
+            args=[run_id, run_id, g80_started_at.isoformat(), workflow.now().isoformat()],
+            start_to_close_timeout=STAGE_TIMEOUT,
+        )
 
         # --- G90 + S100: disclosure check then publish ---
         for stage_id, capability in STAGE_SEQUENCE[8:]:
