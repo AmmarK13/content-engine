@@ -20,7 +20,7 @@ import asyncio
 from temporalio.worker import Worker
 from orchestrator.activities import run_stage,record_g80_approval
 from contracts.stages.idea_request import IdeaRequestV1, Modality
-from orchestrator.consent_gate import validate_run   # <- add this line
+from orchestrator.consent_gate import validate_run   
 
 
 TEMPORAL_HOST = "localhost:7233"
