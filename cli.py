@@ -26,7 +26,7 @@ def _run_worker():
     """Start the Temporal worker in a daemon thread."""
     import asyncio
     from temporalio.worker import Worker
-    from orchestrator.activities import run_stage
+    from orchestrator.activities import run_stage, record_g80_approval
 
     async def _worker_main():
         register_all_stubs()
@@ -35,7 +35,7 @@ def _run_worker():
             client,
             task_queue=TASK_QUEUE,
             workflows=[AvatarPipeline],
-            activities=[run_stage],
+            activities=[run_stage, record_g80_approval],
         )
         print("[worker] Started on task queue: avatar-harness")
         await worker.run()
