@@ -97,6 +97,9 @@ class AvatarPipeline:
         idea = json.loads(idea_json)
         if "idea_request_id" not in idea:
             raise ValueError("idea_request_id field is missing from idea payload")
+        run_id = idea.get("idea_request_id")
+        if not run_id:
+            raise ValueError("idea_request_id field is missing from idea payload")
         last_validation_ref: dict | None = None
         # --- S00 through S70: sequential stage execution ---
         for stage_id, capability in STAGE_SEQUENCE[:8]:

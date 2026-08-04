@@ -16,6 +16,10 @@ from contracts.stages.idea_request import IdeaRequestV1, Modality
 from orchestrator.manifest_store import load_manifest
 from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.registry import register_all_stubs
+import asyncio
+from temporalio.worker import Worker
+from orchestrator.activities import run_stage,record_g80_approval
+
 
 TEMPORAL_HOST = "localhost:7233"
 
@@ -24,9 +28,6 @@ TEMPORAL_HOST = "localhost:7233"
 
 def _run_worker():
     """Start the Temporal worker in a daemon thread."""
-    import asyncio
-    from temporalio.worker import Worker
-    from orchestrator.activities import run_stage
 
     async def _worker_main():
         register_all_stubs()
