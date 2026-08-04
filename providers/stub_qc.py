@@ -6,8 +6,6 @@ S70 Quality Control Stub Provider.
 Produces a deterministic QualityReportV1 payload wrapped inside a StageOutputV1.
 """
 
-from typing import Any
-
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.stages.s70_qc import QualityReportV1
 
@@ -23,8 +21,19 @@ class StubQCProvider:
     capability: str = "quality_control"
 
     def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
-        payload_dict: dict[str, Any] = getattr(envelope, "payload", {}) if hasattr(envelope, "payload") else {}
-        master_video_hash = payload_dict.get("master_video_hash", "a" * 64)
+        video_ref = next(
+            (
+                ref
+                for ref in envelope.artifact_refs
+                if ref.mime_type and ref.mime_type.startswith("video/")
+            ),
+            None,
+        )
+        if video_ref is None:
+            raise ValueError(
+                "S70 QC stub requires a video artifact in envelope.artifact_refs"
+            )
+        master_video_hash = video_ref.hash
 
         qc_report = QualityReportV1(
             run_id=run_id,

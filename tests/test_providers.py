@@ -379,7 +379,14 @@ def test_stub_qc_provider_satisfies_protocol_and_runs():
         stage_id="S70",
         attempt=1,
         input_hash="b" * 64,
-        artifact_refs=[],
+        artifact_refs=[
+            ArtifactRefV1(
+                artifact_id="master_video_test",
+                path="s3://avatar-harness-poc/artifacts/master_video_test.mp4",
+                hash="d" * 64,
+                mime_type="video/mp4",
+            )
+        ],
         validation_ref=None,
         provider=ProviderDescriptorV1(
             provider="stub_qc_provider",
@@ -394,6 +401,8 @@ def test_stub_qc_provider_satisfies_protocol_and_runs():
     assert output.metadata.get("passed") is True
 
     report = QualityReportV1.model_validate(output.payload)
+    assert report.run_id == "test_run_s70"
+    assert report.master_video_hash == "d" * 64
     assert report.passed is True
     assert "identity_similarity" in report.metrics
 
@@ -408,7 +417,14 @@ def test_stub_disclosure_provider_satisfies_protocol_and_runs():
         stage_id="G90",
         attempt=1,
         input_hash="c" * 64,
-        artifact_refs=[],
+        artifact_refs=[
+            ArtifactRefV1(
+                artifact_id="master_video_test",
+                path="s3://avatar-harness-poc/artifacts/master_video_test.mp4",
+                hash="e" * 64,
+                mime_type="video/mp4",
+            )
+        ],
         validation_ref=None,
         provider=ProviderDescriptorV1(
             provider="stub_disclosure_provider",
@@ -423,4 +439,5 @@ def test_stub_disclosure_provider_satisfies_protocol_and_runs():
     assert output.metadata.get("contains_synthetic_media") is True
 
     disclosure = DisclosureDecisionV1.model_validate(output.payload)
+    assert disclosure.master_video_hash == "e" * 64
     assert disclosure.contains_synthetic_media is True
