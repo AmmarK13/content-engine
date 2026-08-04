@@ -35,7 +35,7 @@ def _run_worker():
             client,
             task_queue=TASK_QUEUE,
             workflows=[AvatarPipeline],
-            activities=[run_stage],
+            activities=[run_stage, record_g80_approval],
         )
         print("[worker] Started on task queue: avatar-harness")
         await worker.run()
@@ -81,7 +81,7 @@ async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
                         return run_id
         except Exception:
             pass
-        time.sleep(2)
+        await asyncio.sleep(2)
     raise TimeoutError("Timed out waiting for G80 pause")
 
 
@@ -225,7 +225,7 @@ def main():
         config = yaml.safe_load(f)
 
     topic = args.idea or config.get("topic", "M1 walking skeleton")
-    run_id = config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = args.run_id or config.get("run_id") or f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     modality = Modality(config.get("modality", "AVATAR"))
     identity_id = config.get("identity_id") if modality == Modality.AVATAR else None
 

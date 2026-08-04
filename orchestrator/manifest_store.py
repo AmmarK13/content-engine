@@ -8,6 +8,7 @@ from contracts.common.manifest import (
     StageRecordV1,
     StageStatus,
 )
+from graph.pipeline_graph import STAGE_SEQUENCE
 
 
 DB_CONFIG = {
@@ -17,6 +18,16 @@ DB_CONFIG = {
     "user": os.getenv("DB_USER", "temporal"),
     "password": os.getenv("DB_PASSWORD", "temporal"),
 }
+
+CANONICAL_STAGE_ORDER = [stage_id for stage_id, _ in STAGE_SEQUENCE]
+CANONICAL_STAGE_ORDER.insert(CANONICAL_STAGE_ORDER.index("S70") + 1, "G80")
+STAGE_SORT_INDEX = {
+    stage_id: index for index, stage_id in enumerate(CANONICAL_STAGE_ORDER)
+}
+
+
+def _stage_sort_key(stage_id: str) -> int:
+    return STAGE_SORT_INDEX.get(stage_id, len(STAGE_SORT_INDEX))
 
 
 def get_connection():
@@ -90,7 +101,6 @@ def load_manifest(run_id: str) -> ProductionManifestV1:
                     output_artifact_ids
                 FROM manifest_stage_records
                 WHERE run_id = %s
-                ORDER BY stage_id
                 """,
                 (run_id,),
             )
@@ -99,6 +109,8 @@ def load_manifest(run_id: str) -> ProductionManifestV1:
 
     if not rows:
         raise ValueError(f"No manifest found for run_id '{run_id}'")
+
+    rows = sorted(rows, key=lambda row: (_stage_sort_key(row[2]), row[4]))
 
     stages = []
 

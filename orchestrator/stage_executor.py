@@ -68,7 +68,7 @@ def execute_stage(
     started_at = datetime.now(timezone.utc)
 
     provider = get_provider(capability)
-    output: StageOutputV1 = provider.run(envelope)
+    output: StageOutputV1 = provider.run(envelope,run_id)
 
     # Checkpoint promotion: hash verification must pass before PASSED is written
     validation_report = _verify_artifact_hashes(output, envelope.stage_id)

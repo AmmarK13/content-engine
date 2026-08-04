@@ -2,12 +2,11 @@ from __future__ import annotations
 
 
 import hashlib
-import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict
 
-from contracts.common.envelope import ArtifactRefV1, StageEnvelopeV1, StageOutputV1
+
+from contracts.common.envelope import  StageEnvelopeV1, StageOutputV1
 from contracts.stages.s40_sync import SynchronizedMediaV1
 from orchestrator.storage import put_artifact  # Import at top level
 from providers.base import StageProvider
@@ -20,7 +19,7 @@ class StubSyncProvider(StageProvider):
     def capability(self) -> str:
         return "media_sync"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1,run_id:str) -> StageOutputV1:
         """
         Return a SynchronizedMediaV1 referencing the same video artifact from S30.
 
@@ -56,7 +55,7 @@ class StubSyncProvider(StageProvider):
 
         
         sync_media = SynchronizedMediaV1(
-            run_id=envelope.stage_id,  # Using stage_id as run_id for stub
+            run_id=run_id,  # Using stage_id as run_id for stub
             media_artifact=video_artifact,
         )
 

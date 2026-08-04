@@ -25,7 +25,7 @@ class StubVoiceProvider(StageProvider):
     def capability(self) -> str:
         return "voice_synthesis"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1,run_id:str) -> StageOutputV1:
         """
         Return a VoiceTrackV1 with a reference to a stored dummy audio file.
 
@@ -55,7 +55,7 @@ class StubVoiceProvider(StageProvider):
 
         # Build the VoiceTrackV1 payload
         voice_track = VoiceTrackV1(
-            run_id=envelope.stage_id,  # Using stage_id as run_id for stub
+            run_id=run_id,  # Using stage_id as run_id for stub
             voice_id="stub_voice_001",
             audio_artifact=artifact_ref,
             duration_seconds=5.0,  # Fixed 5-second dummy audio

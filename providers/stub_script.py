@@ -8,7 +8,6 @@ and persists the script as a real artifact via storage.py.
 """
 
 import json
-from typing import Any
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.stages.s10_script import ScriptPackageV1
@@ -24,9 +23,8 @@ class StubScriptProvider:
 
     capability: str = "script_generation"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
-        payload_dict: dict[str, Any] = getattr(envelope, "payload", {}) if hasattr(envelope, "payload") else {}
-        run_id = payload_dict.get("run_id", "run_stub_s10")
+    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
+        
 
         script_package = ScriptPackageV1(
             run_id=run_id,
