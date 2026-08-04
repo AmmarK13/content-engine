@@ -81,7 +81,7 @@ async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
                         return run_id
         except Exception:
             pass
-        time.sleep(2)
+        await asyncio.sleep(2)
     raise TimeoutError("Timed out waiting for G80 pause")
 
 
