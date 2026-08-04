@@ -18,6 +18,8 @@ from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.manifest_store import load_manifest
 from orchestrator.storage import _make_s3_client, BUCKET
 
+from orchestrator.telemetry import get_connection
+
 TEMPORAL_HOST = "localhost:7233"
 
 
@@ -63,22 +65,27 @@ async def _async_test_pipeline_e2e():
         id=workflow_id,
         task_queue=TASK_QUEUE,
     )
-
-    # Poll until S60 is completed and recorded in manifest or workflow is waiting at G80
     master_hash = None
     for _ in range(30):
         try:
-            manifest = load_manifest(run_id)
-            s60 = next((s for s in manifest.stages if s.stage_id == "S60"), None)
-            if s60 and s60.output_artifact_ids:
-                master_hash = s60.output_artifact_ids[0]
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT output_hash FROM stage_run_records WHERE run_id=%s AND stage_id=%s",
+                        (run_id, "S60"),
+                    )
+                    row = cur.fetchone()
+            if row and row[0]:
+                master_hash = row[0]
                 break
         except Exception:
             pass
         await asyncio.sleep(1)
 
     if not master_hash:
-        master_hash = "stub-hash-" + "0" * 32
+        pytest.fail("S60 output_hash never appeared in stage_run_records within timeout")
+
+ 
 
     # Send G80 approval signal
     approval_decision = HumanApprovalV1(

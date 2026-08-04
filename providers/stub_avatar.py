@@ -19,7 +19,7 @@ class StubAvatarProvider(StageProvider):
     def capability(self) -> str:
         return "avatar_render"
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1,run_id:str) -> StageOutputV1:
         
         
         fixture_path = Path(__file__).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
@@ -44,7 +44,7 @@ class StubAvatarProvider(StageProvider):
 
         
         visual_track = PrimaryVisualTrackV1(
-            run_id=envelope.stage_id, 
+            run_id=run_id, 
             video_artifact=artifact_ref,
         )
 

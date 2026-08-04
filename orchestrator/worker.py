@@ -20,7 +20,7 @@ from orchestrator.activities import run_stage
 from orchestrator.registry import register
 from providers.stub_script import StubScriptProvider
 
-from orchestrator.activities import run_stage
+from orchestrator.activities import run_stage, record_g80_approval
 from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
 from orchestrator.registry import register_all_stubs
 
@@ -45,7 +45,7 @@ async def main():
         client,
         task_queue=TASK_QUEUE,
         workflows=[AvatarPipeline],
-        activities=[run_stage],
+        activities=[run_stage, record_g80_approval],
     )
     
     print(f"Starting worker on task queue: {TASK_QUEUE}")

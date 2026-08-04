@@ -69,17 +69,7 @@ def put_artifact(data: bytes, artifact_id: str, mime_type: str) -> ArtifactRefV1
             ContentType=mime_type,
         )
     except Exception as exc:
-        fallback = os.environ.get("ALLOW_STORAGE_FALLBACK", "false").lower() in (
-            "1",
-            "true",
-            "yes",
-        )
-        if fallback:
-            pass
-        else:
-            raise RuntimeError(
-                f"Failed to put artifact {artifact_id} to {BUCKET}/{key}: {exc}"
-            ) from exc
+        raise RuntimeError(f"Failed to put artifact {artifact_id} to {BUCKET}/{key}: {exc}") from exc
 
     return ArtifactRefV1(
         artifact_id=artifact_id,

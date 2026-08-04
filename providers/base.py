@@ -21,7 +21,7 @@ class StageProvider(Protocol):
         """The capability this provider implements (e.g., 'voice_synthesis')."""
         ...
 
-    def run(self, envelope: StageEnvelopeV1) -> StageOutputV1:
+    def run(self, envelope: StageEnvelopeV1,run_id:str = "unmigrated") -> StageOutputV1:
         """Execute the stage with the given envelope and return the output."""
         ...
 

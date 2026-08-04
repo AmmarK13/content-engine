@@ -18,24 +18,13 @@ with workflow.unsafe.imports_passed_through():
         ArtifactRefV1, 
     )
     from contracts.stages.g80_approval import HumanApprovalV1
+    from graph.pipeline_graph import STAGE_SEQUENCE
+import asyncio
 
 TASK_QUEUE = "avatar-harness"
 STAGE_TIMEOUT = timedelta(minutes=5)
 
-# The ordered sequence of capabilities the pipeline executes.
-# G80 is NOT in this list — it's a durable signal wait, not a provider call.
-STAGE_SEQUENCE = [
-    ("S00", "intake"),
-    ("S10", "script_generation"),
-    ("S20", "voice_synthesis"),
-    ("S30", "avatar_render"),
-    ("S40", "media_sync"),
-    ("S50", "caption_generation"),
-    ("S60", "assembly"),
-    ("S70", "quality_control"),
-    ("G90", "disclosure_check"),
-    ("S100", "publish"),
-]
+
 
 def _build_envelope(
     stage_id: str,
@@ -106,7 +95,8 @@ class AvatarPipeline:
             The final stage's StageOutputV1 as a dict.
         """
         idea = json.loads(idea_json)
-        run_id = idea.get("idea_request_id", "run_unknown")
+        if "idea_request_id" not in idea:
+            raise ValueError("idea_request_id field is missing from idea payload")
         last_validation_ref: dict | None = None
         # --- S00 through S70: sequential stage execution ---
         for stage_id, capability in STAGE_SEQUENCE[:8]:
@@ -142,8 +132,20 @@ class AvatarPipeline:
 
         # --- G80: durable wait for human approval ---
         workflow.logger.info("Waiting for approval signal (G80)...")
-        await workflow.wait_condition(lambda: self._approval is not None)
+        g80_started_at = workflow.now()
+        try:
+            await workflow.wait_condition(lambda: self._approval is not None,timeout=timedelta(minutes=30))
+        except asyncio.TimeoutError:
+            workflow.logger.error("G80 approval timed out after 30 minutes - no valid signal received")
+            raise
+
         workflow.logger.info(f"Approval received: {self._approval}")
+
+        await workflow.execute_activity(
+            "record_g80_approval",
+            args=[run_id, run_id, g80_started_at.isoformat(), workflow.now().isoformat()],
+            start_to_close_timeout=STAGE_TIMEOUT,
+        )
 
         # --- G90 + S100: disclosure check then publish ---
         for stage_id, capability in STAGE_SEQUENCE[8:]:
