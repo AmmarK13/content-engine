@@ -59,6 +59,14 @@ def try_register_real_providers() -> list[str]:
             real.append('script_generation')
     except Exception as e:
         print(f'[registry] script_generation real provider unavailable: {e}')
+    try:
+        cfg = load_provider_config('caption_generation')
+        if cfg.get('api_key') or cfg.get('model_size'):
+            from providers.whisperx_captions import WhisperXCaptionsProvider
+            register(WhisperXCaptionsProvider())
+            real.append('caption_generation')
+    except Exception as e:
+        print(f'[registry] caption_generation real provider unavailable: {e}')
     return real
 
 # Auto-register stubs when this module is imported

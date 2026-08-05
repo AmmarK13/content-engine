@@ -16,6 +16,7 @@ class GeminiScriptProvider:
     capability: str = "script_generation"
 
     def __init__(self):
+        print("***** GEMINI PROVIDER REGISTERED *****")
         config = load_provider_config("script_generation")
 
         self._model_name = config.get("model_id", "gemini-1.5-flash")
@@ -28,6 +29,8 @@ class GeminiScriptProvider:
         )
 
     def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
+
+        print("***** GEMINI SCRIPT RUNNING *****")
         idea_json = next(
             (
                 ref
