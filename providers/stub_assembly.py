@@ -42,6 +42,7 @@ class StubAssemblyProvider:
     capability: str = "assembly"
 
     def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
+
         video_bytes = FIXTURE_VIDEO.read_bytes()
 
         artifact = put_artifact(
