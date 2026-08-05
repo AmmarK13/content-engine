@@ -18,9 +18,8 @@ from orchestrator.activities import run_stage
 # Import and register all stub providers so the registry is populated
 # before the worker starts accepting work.
 from orchestrator.registry import register
-from providers.stub_script import StubScriptProvider
 
-from orchestrator.activities import run_stage, record_g80_approval
+from orchestrator.activities import run_stage, record_g80_approval,run_intake_stage
 from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
 from orchestrator.registry import register_all_stubs, try_register_real_providers
 
@@ -46,7 +45,7 @@ async def main():
         client,
         task_queue=TASK_QUEUE,
         workflows=[AvatarPipeline],
-        activities=[run_stage, record_g80_approval],
+        activities=[run_stage, record_g80_approval,run_intake_stage],
     )
     
     print(f"Starting worker on task queue: {TASK_QUEUE}")
