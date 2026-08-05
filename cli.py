@@ -7,21 +7,16 @@ from pathlib import Path
 
 import yaml
 from temporalio.client import Client
+from temporalio.worker import Worker
 
-import uuid
 from datetime import datetime
-
 
 from contracts.stages.idea_request import IdeaRequestV1, Modality
 from orchestrator.manifest_store import load_manifest
 from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.registry import register_all_stubs, try_register_real_providers
-from orchestrator.registry import register_all_stubs
-import asyncio
-from temporalio.worker import Worker
-from orchestrator.activities import run_stage,record_g80_approval
-from contracts.stages.idea_request import IdeaRequestV1, Modality
-from orchestrator.consent_gate import validate_run   
+from orchestrator.activities import run_stage, record_g80_approval, run_intake_stage
+from orchestrator.consent_gate import validate_run
 
 
 TEMPORAL_HOST = "localhost:7233"
@@ -40,7 +35,7 @@ def _run_worker():
             client,
             task_queue=TASK_QUEUE,
             workflows=[AvatarPipeline],
-            activities=[run_stage, record_g80_approval],
+            activities=[run_stage, record_g80_approval, run_intake_stage],
         )
         print("[worker] Started on task queue: avatar-harness")
         await worker.run()
@@ -65,7 +60,6 @@ async def _start_pipeline(idea: IdeaRequestV1) -> str:
 
 async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
     """Poll manifest until S00-S70 all passed, meaning pipeline is at G80."""
-    import psycopg
     from orchestrator.manifest_store import get_connection
 
     print("[pipeline] Waiting for stages S00→S70 to complete...")
@@ -93,7 +87,6 @@ async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
 # ── Approve ───────────────────────────────────────────────────────────────────
 
 async def _approve(workflow_id: str, run_id: str):
-    import psycopg
     from contracts.stages.g80_approval import ApprovalDecision, HumanApprovalV1
     from datetime import datetime, timezone
     from orchestrator.manifest_store import get_connection
@@ -134,18 +127,27 @@ async def _approve(workflow_id: str, run_id: str):
 
 # ── Wait for completion ────────────────────────────────────────────────────────
 
-async def _wait_for_completion(workflow_id: str, timeout: int = 60):
-    from temporalio.client import Client
+async def _wait_for_completion(workflow_id: str, timeout: int = 60) -> dict:
+    """
+    Wait for the workflow to finish and return its final result dict.
+
+    Previously this discarded handle.result() entirely, which is exactly
+    why _verify() had no way to check real G90/S100 content and fell back
+    to presence-only checks (Ammar Day 2 Part 2). Capturing it here — and
+    AvatarPipeline.run() returning both G90 and S100's payloads, not just
+    S100's — is what makes the real content check possible.
+    """
     client = await Client.connect(TEMPORAL_HOST)
     handle = client.get_workflow_handle(workflow_id)
     print("[pipeline] Waiting for G90 + S100 to complete...")
-    await asyncio.wait_for(handle.result(), timeout=timeout)
+    result = await asyncio.wait_for(handle.result(), timeout=timeout)
     print("[pipeline] Workflow completed ✓")
+    return result
 
 
 # ── Verify ────────────────────────────────────────────────────────────────────
 
-def _verify(run_id: str, privacy: str):
+def _verify(run_id: str, privacy: str, workflow_result: dict | None = None):
     print("\n" + "=" * 60)
     print("M1 VERIFICATION")
     print("=" * 60)
@@ -156,12 +158,13 @@ def _verify(run_id: str, privacy: str):
         print(f"✗ Could not load manifest: {e}")
         sys.exit(1)
 
+    # Dynamic total instead of the old hardcoded 10/11. S00 now runs through
+    # its own activity (Part 1) and correctly gets its own manifest row, so
+    # the pre-fix hardcoded denominators undercounted by one.
+    total_stages = len(manifest.stages)
+
     passed = 0
     sha_valid = True
-    synthetic_flag = False
-    receipt_found = False
-    receipt_privacy = None
-    receipt_dry_run = None
 
     for stage in manifest.stages:
         status = stage.status.value
@@ -170,29 +173,52 @@ def _verify(run_id: str, privacy: str):
         if status == "passed":
             passed += 1
 
-        if stage.stage_id == "G90":
-            synthetic_flag = True  # G90 passing means containsSyntheticMedia=True was enforced
+    # G80's manifest row is already counted in the loop above — it isn't a
+    # separate +1 on top of `passed`, that was double-counting it.
+    checkpoint_count = passed
 
-        if stage.stage_id == "S100":
-            receipt_found = True
+    # ── Real content checks (Part 2) ────────────────────────────────────────
+    synthetic_flag = False
+    receipt_found = False
+    receipt_privacy = None
+    receipt_dry_run = None
 
-    checkpoint_count = passed + 1  # +1 for G80 signal wait
+    if workflow_result:
+        g90_payload = (workflow_result.get("G90") or {}).get("payload") or {}
+        s100_payload = (workflow_result.get("S100") or {}).get("payload") or {}
+
+        synthetic_flag = bool(g90_payload.get("contains_synthetic_media", False))
+        receipt_found = bool(s100_payload)
+        receipt_privacy = s100_payload.get("privacy")
+        receipt_dry_run = s100_payload.get("dry_run")
+    else:
+        # Fallback to presence-only check if no result was captured
+        # (e.g. verify run against a past run_id with no live workflow handle).
+        for stage in manifest.stages:
+            if stage.stage_id == "G90" and stage.status.value == "passed":
+                synthetic_flag = True
+            if stage.stage_id == "S100" and stage.status.value == "passed":
+                receipt_found = True
+
+    effective_privacy = receipt_privacy or privacy
 
     print()
-    print(f"  Stages passed:      {passed}/10")
-    print(f"  checkpoint_count:   {checkpoint_count}/11")
-    print(f"  SHA checks:         {'✓ verified by stage_executor' if passed == 10 else '✗ not all passed'}")
-    print(f"  containsSyntheticMedia=true: {'✓' if synthetic_flag else '✗ G90 did not pass'}")
-    print(f"  privacy=unlisted:   {'✓' if privacy == 'unlisted' else f'✗ was {privacy}'}")
+    print(f"  Stages passed:      {passed}/{total_stages}")
+    print(f"  checkpoint_count:   {checkpoint_count}/{total_stages}")
+    print(f"  SHA checks:         {'✓ verified by stage_executor' if passed == total_stages else '✗ not all passed'}")
+    print(f"  containsSyntheticMedia=true: {'✓' if synthetic_flag else '✗ G90 did not confirm true'}")
+    print(f"  privacy=unlisted:   {'✓' if effective_privacy == 'unlisted' else f'✗ was {effective_privacy}'}")
     print(f"  publish receipt:    {'✓' if receipt_found else '✗ S100 missing'}")
+    if receipt_dry_run is not None:
+        print(f"  dry_run:            {receipt_dry_run}")
 
     print()
     all_pass = (
-        checkpoint_count >= 11
+        checkpoint_count >= total_stages
         and sha_valid
         and synthetic_flag
         and receipt_found
-        and privacy == "unlisted"
+        and effective_privacy == "unlisted"
     )
 
     if all_pass:
@@ -268,11 +294,11 @@ def main():
     # Approve
     asyncio.run(_approve(workflow_id, run_id))
 
-    # Wait for completion
-    asyncio.run(_wait_for_completion(workflow_id))
+    # Wait for completion — now captures the real result
+    workflow_result = asyncio.run(_wait_for_completion(workflow_id))
 
     # Verify
-    _verify(run_id, args.privacy)
+    _verify(run_id, args.privacy, workflow_result)
 
 
 if __name__ == "__main__":

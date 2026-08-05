@@ -101,8 +101,16 @@ class AvatarPipeline:
         if not run_id:
             raise ValueError("idea_request_id field is missing from idea payload")
         last_validation_ref: dict | None = None
-        # --- S00 through S70: sequential stage execution ---
-        for stage_id, capability in STAGE_SEQUENCE[:8]:
+        envelope_dict = _build_envelope("S00", "intake", run_id, artifact_refs=[])
+        output_dict = await workflow.execute_activity(
+            "run_intake_stage",
+            args=[idea, run_id, envelope_dict],
+            start_to_close_timeout=STAGE_TIMEOUT,
+        )
+        last_validation_ref = output_dict.pop("_validation_ref", None)
+        self._stage_outputs["S00"] = output_dict
+        # STAGE_SEQUENCE[1:] then runs through the existing loop, unchanged
+        for stage_id, capability in STAGE_SEQUENCE[1:8]:
             prior_artifact_refs: list[dict] = []
             for prior_output in self._stage_outputs.values():
                 prior_artifact_refs.extend(prior_output.get("artifact_refs", []))
@@ -172,4 +180,7 @@ class AvatarPipeline:
             self._stage_outputs[stage_id] = output_dict
             workflow.logger.info(f"Stage {stage_id} completed")
 
-        return self._stage_outputs.get("S100", {})
+        return {
+    "G90": self._stage_outputs.get("G90", {}),
+    "S100": self._stage_outputs.get("S100", {}),
+            }

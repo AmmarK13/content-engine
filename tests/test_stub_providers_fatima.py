@@ -22,6 +22,7 @@ from orchestrator.storage import get_artifact
 from providers.stub_intake import StubIntakeProvider
 from providers.stub_captions import StubCaptionsProvider
 from providers.stub_assembly import StubAssemblyProvider
+from contracts.stages.idea_request import IdeaRequestV1, Modality
 
 
 def make_envelope(stage_id: str, capability: str) -> StageEnvelopeV1:
@@ -49,8 +50,18 @@ def make_envelope(stage_id: str, capability: str) -> StageEnvelopeV1:
 def test_stub_intake():
     provider = StubIntakeProvider()
 
+    idea = IdeaRequestV1(
+        idea_request_id="test_run_001",
+        modality=Modality.AVATAR,
+        topic="some distinctive test topic",
+        identity_id="identity_001",
+        voice_id="voice_001",
+    )
+
     output = provider.run(
-        make_envelope("S00", provider.capability), "test_run_001"
+        make_envelope("S00", provider.capability),
+        "test_run_001",
+        idea.model_dump(mode="json"),
     )
 
     assert len(output.artifact_refs) == 1
@@ -61,7 +72,7 @@ def test_stub_intake():
 
     assert stored
     assert output.payload["idea_request_id"] == "test_run_001"
-
+    assert output.payload["topic"] == "some distinctive test topic"
 
 def test_stub_captions():
     provider = StubCaptionsProvider()
