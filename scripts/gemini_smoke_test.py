@@ -3,7 +3,7 @@ import json
 import google.generativeai as genai
 from orchestrator.provider_config import load_provider_config
 from contracts.prompts.script_generation_prompt import SCRIPT_GENERATION_SYSTEM_PROMPT, build_script_prompt
-def test_gemini():
+def main():
     print("Loading config...")
     config = load_provider_config('script_generation')
     
@@ -35,4 +35,4 @@ def test_gemini():
     except json.JSONDecodeError:
         print("Error: The response was not valid JSON.")
 if __name__ == "__main__":
-    test_gemini()
+    main()
