@@ -32,14 +32,8 @@ class StubIntakeProvider:
 
     capability: str = "intake"
 
-    def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
-        idea = IdeaRequestV1(
-            idea_request_id=run_id,
-            modality=Modality.AVATAR,
-            topic="Stub pipeline request",
-            identity_id="identity_stub",
-            voice_id="voice_stub",
-        )
+    def run(self, envelope: StageEnvelopeV1, run_id: str,idea_dict:dict) -> StageOutputV1:
+        idea = IdeaRequestV1.model_validate(idea_dict)
 
         idea_bytes = json.dumps(
             idea.model_dump(mode="json")
