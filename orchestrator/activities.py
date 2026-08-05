@@ -40,3 +40,13 @@ async def record_g80_approval(
             completed_at=completed_at,
         ),
     )
+
+@activity.defn
+async def run_intake_stage(idea_dict: dict, run_id: str, envelope_dict: dict) -> dict:
+    envelope = StageEnvelopeV1.model_validate(envelope_dict)
+    output, validation_ref = execute_stage(
+        run_id, run_id, "intake", envelope, idea_dict=idea_dict
+    )
+    result = output.model_dump()
+    result["_validation_ref"] = validation_ref.model_dump()
+    return result
