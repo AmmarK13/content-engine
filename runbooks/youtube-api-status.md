@@ -14,8 +14,8 @@ Real YouTube uploads remain blocked pending Google's audit/review decision for s
 ## Submission Details
 
 - Google Cloud project ID: content-engine-youtube-504414
-- Submission date: Not yet submitted — blocked on landing page deployment (PR merged, pending ownership transfer to shehryarR and Netlify deploy)
-- Google reference/case number: Not yet issued — assigned after submission
+- Submission date: 2026-08-05
+- Google reference/case number: Pending — expect first contact from Google Trust and Safety within 3-5 days (review up to 4-6 weeks)
 
 ## Evidence In Repo
 
