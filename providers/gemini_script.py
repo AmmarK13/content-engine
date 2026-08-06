@@ -1,6 +1,6 @@
 import json
 
-import google.generativeai as genai
+from google import genai
 
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.prompts.script_generation_prompt import (
@@ -21,12 +21,7 @@ class GeminiScriptProvider:
 
         self._model_name = config.get("model_id", "gemini-1.5-flash")
 
-        genai.configure(api_key=config["api_key"])
-
-        self._model = genai.GenerativeModel(
-            model_name=self._model_name,
-            system_instruction=SCRIPT_GENERATION_SYSTEM_PROMPT,
-        )
+        self._client = genai.Client(api_key=config["api_key"])
 
     def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
 
@@ -46,8 +41,12 @@ class GeminiScriptProvider:
             idea_data = json.loads(get_artifact(idea_json))
             topic = idea_data.get("topic", topic)
 
-        response = self._model.generate_content(
-            build_script_prompt(topic)
+        response = self._client.models.generate_content(
+            model=self._model_name,
+            contents=build_script_prompt(topic),
+            config={
+                "system_instruction": SCRIPT_GENERATION_SYSTEM_PROMPT,
+            },
         )
 
         raw = response.text.strip()
