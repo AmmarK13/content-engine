@@ -1,5 +1,15 @@
 from providers.base import StageProvider
-
+from orchestrator.provider_config import load_provider_config
+from providers.stub_intake import StubIntakeProvider
+from providers.stub_script import StubScriptProvider
+from providers.stub_voice import StubVoiceProvider
+from providers.stub_avatar import StubAvatarProvider
+from providers.stub_sync import StubSyncProvider
+from providers.stub_captions import StubCaptionsProvider
+from providers.stub_assembly import StubAssemblyProvider
+from providers.stub_qc import StubQCProvider
+from providers.stub_disclosure import StubDisclosureProvider
+from providers.stub_publish import StubPublishProvider
 
 _providers: dict[str,StageProvider] ={}
 
@@ -22,16 +32,7 @@ def clear() -> None:
     _providers.clear()
 
 def register_all_stubs() -> None:
-    from providers.stub_intake import StubIntakeProvider
-    from providers.stub_script import StubScriptProvider
-    from providers.stub_voice import StubVoiceProvider
-    from providers.stub_avatar import StubAvatarProvider
-    from providers.stub_sync import StubSyncProvider
-    from providers.stub_captions import StubCaptionsProvider
-    from providers.stub_assembly import StubAssemblyProvider
-    from providers.stub_qc import StubQCProvider
-    from providers.stub_disclosure import StubDisclosureProvider
-    from providers.stub_publish import StubPublishProvider
+
 
     register(StubIntakeProvider())
     register(StubScriptProvider())
@@ -51,7 +52,7 @@ def try_register_real_providers() -> list[str]:
     """
     real = []
     try:
-        from orchestrator.provider_config import load_provider_config
+        
         cfg = load_provider_config('script_generation')
         if cfg.get('api_key'):
             from providers.gemini_script import GeminiScriptProvider
@@ -67,7 +68,16 @@ def try_register_real_providers() -> list[str]:
             real.append('caption_generation')
     except Exception as e:
         print(f'[registry] caption_generation real provider unavailable: {e}')
+    try:
+        cfg = load_provider_config('voice_synthesis')
+        if cfg.get('api_key'):
+                from providers.elevenlabs_voice import ElevenLabsVoiceProvider
+                register(ElevenLabsVoiceProvider())
+                real.append('voice_synthesis')
+    except Exception as e:
+        print(f'[registry] voice_synthesis real provider unavailable: {e}')
     return real
+
 
 # Auto-register stubs when this module is imported
 register_all_stubs()
