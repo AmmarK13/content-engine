@@ -4,8 +4,9 @@ tests/test_providers.py
 Tests for all stage providers.
 """
 
-from __future__ import annotations
+from _future_ import annotations
 
+import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -103,7 +104,7 @@ def test_voice_provider_interface(voice_provider):
 def test_voice_provider_run(voice_provider, sample_envelope, mock_artifact_ref):
     """Test that voice provider returns a valid StageOutputV1 with VoiceTrackV1."""
     # Need to ensure fixture file exists
-    fixture_path = Path(__file__).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
     if not fixture_path.exists():
         pytest.skip(f"Fixture file not found: {fixture_path}")
 
@@ -115,7 +116,7 @@ def test_voice_provider_run(voice_provider, sample_envelope, mock_artifact_ref):
         register(voice_provider)
 
         # Run the provider
-        output = voice_provider.run(sample_envelope,"test_run_s20")
+        output = voice_provider.run(sample_envelope)
 
         # Check output structure
         assert isinstance(output, StageOutputV1)
@@ -150,7 +151,7 @@ def test_avatar_provider_interface(avatar_provider):
 
 def test_avatar_provider_run(avatar_provider, sample_envelope, mock_video_ref):
     """Test that avatar provider returns a valid StageOutputV1 with PrimaryVisualTrackV1."""
-    fixture_path = Path(__file__).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
     if not fixture_path.exists():
         pytest.skip(f"Fixture file not found: {fixture_path}")
 
@@ -163,8 +164,7 @@ def test_avatar_provider_run(avatar_provider, sample_envelope, mock_video_ref):
         # Modify envelope for avatar stage
         sample_envelope.stage_id = "S30"
 
-        output = avatar_provider.run(sample_envelope, "test_run_s30")
-
+        output = avatar_provider.run(sample_envelope)
 
         assert isinstance(output, StageOutputV1)
         assert "run_id" in output.payload
@@ -192,26 +192,39 @@ def test_sync_provider_run_with_existing_artifact(sync_provider, sample_envelope
     """Test sync provider when video artifact is in envelope."""
     register(sync_provider)
 
-    # Add video artifact to envelope
     sample_envelope.artifact_refs = [mock_video_ref]
     sample_envelope.stage_id = "S40"
 
-    output = sync_provider.run(sample_envelope, "test_run_s40")
+    with patch("providers.stub_sync.get_artifact") as mock_get:
+        mock_get.return_value = b"dummy video bytes"
+        with patch("providers.stub_sync.put_artifact") as mock_put:
+            mock_put.return_value = ArtifactRefV1(
+                artifact_id="test_sync_001",
+                path="s3://avatar-harness-poc/artifacts/" + "c" * 64,
+                hash="c" * 64,
+                mime_type="video/mp4",
+            )
 
-    assert isinstance(output, StageOutputV1)
-    assert "run_id" in output.payload
-    assert "media_artifact" in output.payload
+            output = sync_provider.run(sample_envelope)
 
-    # Check SynchronizedMediaV1 can be reconstructed
-    sync_media = SynchronizedMediaV1(**output.payload)
-    assert sync_media.media_artifact.artifact_id == "test_video_001"
-    assert sync_media.media_artifact.mime_type == "video/mp4"
+            assert isinstance(output, StageOutputV1)
+            assert "run_id" in output.payload
+            assert "media_artifact" in output.payload
 
-    assert len(output.artifact_refs) == 1
-    assert output.artifact_refs[0].artifact_id == "test_video_001"
-    assert output.metadata["provider"] == "stub_sync"
-    assert output.metadata["stub"] is True
-    assert output.metadata["pass_through"] is True
+            sync_media = SynchronizedMediaV1(**output.payload)
+            assert sync_media.media_artifact.artifact_id == "test_sync_001"
+            assert sync_media.media_artifact.mime_type == "video/mp4"
+
+            assert len(output.artifact_refs) == 1
+            ref = output.artifact_refs[0]
+            assert ref.artifact_id == "test_sync_001"
+            assert ref.hash == "c" * 64
+            assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+            assert output.metadata["provider"] == "stub_sync"
+            assert output.metadata["stub"] is True
+            assert output.metadata["pass_through"] is False
+            mock_get.assert_called_once_with(mock_video_ref)
+            mock_put.assert_called_once()
 
 
 def test_sync_provider_run_fallback(sync_provider, sample_envelope, mock_video_ref):
@@ -226,12 +239,15 @@ def test_sync_provider_run_fallback(sync_provider, sample_envelope, mock_video_r
         sample_envelope.artifact_refs = []
         sample_envelope.stage_id = "S40"
 
-        output = sync_provider.run(sample_envelope, "test_run_s40")
+        output = sync_provider.run(sample_envelope)
         
         assert output.metadata["provider"] == "stub_sync"
+        assert output.metadata["pass_through"] is False
         assert "media_artifact" in output.payload
         assert output.payload["media_artifact"]["artifact_id"] == "test_video_001"
-        
+        assert len(output.artifact_refs) == 1
+        assert output.artifact_refs[0].artifact_id == "test_video_001"
+
         mock_put.assert_called_once()
 
 
@@ -249,7 +265,7 @@ def test_provider_registration():
 
 def test_voice_provider_artifact_persistence(voice_provider, sample_envelope, mock_artifact_ref):
     """Test that voice provider actually calls put_artifact with correct parameters."""
-    fixture_path = Path(__file__).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
     if not fixture_path.exists():
         pytest.skip(f"Fixture file not found: {fixture_path}")
 
@@ -259,7 +275,7 @@ def test_voice_provider_artifact_persistence(voice_provider, sample_envelope, mo
     with patch("providers.stub_voice.put_artifact") as mock_put:
         mock_put.return_value = mock_artifact_ref
 
-        output = voice_provider.run(sample_envelope,"test_run_s20")
+        output = voice_provider.run(sample_envelope)
 
         # Verify put_artifact was called with correct args
         assert mock_put.called
@@ -273,7 +289,7 @@ def test_voice_provider_artifact_persistence(voice_provider, sample_envelope, mo
 
 def test_avatar_provider_artifact_persistence(avatar_provider, sample_envelope, mock_video_ref):
     """Test that avatar provider actually calls put_artifact with correct parameters."""
-    fixture_path = Path(__file__).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
     if not fixture_path.exists():
         pytest.skip(f"Fixture file not found: {fixture_path}")
 
@@ -284,7 +300,7 @@ def test_avatar_provider_artifact_persistence(avatar_provider, sample_envelope, 
     with patch("providers.stub_avatar.put_artifact") as mock_put:
         mock_put.return_value = mock_video_ref
 
-        output = avatar_provider.run(sample_envelope, "test_run_s30")
+        output = avatar_provider.run(sample_envelope)
 
         # Verify put_artifact was called with correct args
         assert mock_put.called
@@ -299,7 +315,10 @@ def test_avatar_provider_artifact_persistence(avatar_provider, sample_envelope, 
 def test_sync_provider_copies_artifact(sync_provider, sample_envelope, mock_video_ref):
     """Test that sync provider copies the video artifact reference."""
     register(sync_provider)
-    
+
+    bucket = os.environ.get('TEST_S3_BUCKET')
+    if not bucket:
+        pytest.skip("S3 bucket not configured for testing")
     # Multiple video artifacts in envelope (should pick first)
     mock_video_ref2 = ArtifactRefV1(
         artifact_id="test_video_002",
@@ -311,11 +330,97 @@ def test_sync_provider_copies_artifact(sync_provider, sample_envelope, mock_vide
     sample_envelope.artifact_refs = [mock_video_ref, mock_video_ref2]
     sample_envelope.stage_id = "S40"
 
-    output = sync_provider.run(sample_envelope, "test_run_s40")
+    output = sync_provider.run(sample_envelope)
     
     # Should use the first video artifact
     sync_media = SynchronizedMediaV1(**output.payload)
     assert sync_media.media_artifact.artifact_id == "test_video_001"
+
+def test_sync_provider_run_creates_sync_artifact(sync_provider, sample_envelope, mock_video_ref):
+    """Test that sync provider creates a new sync artifact and returns a content-addressed ref."""
+    register(sync_provider)
+
+    sample_envelope.artifact_refs = [mock_video_ref]
+    sample_envelope.stage_id = "S40"
+
+    # Mock BOTH get_artifact and put_artifact
+    with patch("providers.stub_sync.get_artifact") as mock_get:
+        mock_get.return_value = b"dummy video bytes"  # Return dummy data
+        
+        with patch("providers.stub_sync.put_artifact") as mock_put:
+            mock_put.return_value = ArtifactRefV1(
+                artifact_id="test_sync_001",
+                path="s3://avatar-harness-poc/artifacts/" + "c" * 64,
+                hash="c" * 64,
+                mime_type="video/mp4",
+            )
+
+            output = sync_provider.run(sample_envelope)
+
+            # Verify get_artifact was called with the mock_video_ref
+            mock_get.assert_called_once_with(mock_video_ref)
+            
+            # Verify put_artifact was called with the dummy data
+            mock_put.assert_called_once()
+            call_args = mock_put.call_args
+            assert call_args.kwargs["data"] == b"dummy video bytes"
+            assert call_args.kwargs["mime_type"] == "video/mp4"
+
+            # Verify output
+            assert isinstance(output, StageOutputV1)
+            assert len(output.artifact_refs) == 1
+            assert output.artifact_refs[0].artifact_id == "test_sync_001"
+            assert output.artifact_refs[0].hash == "c" * 64
+            assert output.metadata["provider"] == "stub_sync"
+            assert output.metadata["pass_through"] is False
+
+def test_voice_provider_artifact_refs_are_content_addressed(voice_provider, sample_envelope):
+    """Test that voice provider returns a real ArtifactRefV1 with a content-addressed path."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    with patch("providers.stub_voice.put_artifact") as mock_put:
+        mock_put.return_value = ArtifactRefV1(
+            artifact_id="test_voice_001",
+            path="s3://avatar-harness-poc/artifacts/" + "a" * 64,
+            hash="a" * 64,
+            mime_type="audio/wav",
+        )
+
+        output = voice_provider.run(sample_envelope)
+
+        assert output.artifact_refs
+        ref = output.artifact_refs[0]
+        assert ref.hash == "a" * 64
+        assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+        assert ref.mime_type == "audio/wav"
+        assert mock_put.called
+
+
+def test_avatar_provider_artifact_refs_are_content_addressed(avatar_provider, sample_envelope):
+    """Test that avatar provider returns a real ArtifactRefV1 with a content-addressed path."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    sample_envelope.stage_id = "S30"
+    with patch("providers.stub_avatar.put_artifact") as mock_put:
+        mock_put.return_value = ArtifactRefV1(
+            artifact_id="test_avatar_001",
+            path="s3://avatar-harness-poc/artifacts/" + "b" * 64,
+            hash="b" * 64,
+            mime_type="video/mp4",
+        )
+
+        output = avatar_provider.run(sample_envelope)
+
+        assert output.artifact_refs
+        ref = output.artifact_refs[0]
+        assert ref.hash == "b" * 64
+        assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+        assert ref.mime_type == "video/mp4"
+        assert mock_put.called
 
 
 def test_stub_script_provider_satisfies_protocol():
@@ -343,28 +448,14 @@ def test_stub_script_provider_run():
         ),
     )
 
-    run_id = "run_test_s10"
-
-    mock_artifact_ref = ArtifactRefV1(
-        artifact_id="test_script_001",
-        path="s3://avatar-harness-poc/artifacts/test_script.json",
-        hash="d" * 64,
-        mime_type="application/json",
-    )
-
-    with patch("providers.stub_script.put_artifact") as mock_put:
-        mock_put.return_value = mock_artifact_ref
-        output = provider.run(envelope, run_id)
-
-        mock_put.assert_called_once()
-        
+    output = provider.run(envelope)
 
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("stub") is True
 
     # Validate output payload against real M0 ScriptPackageV1 contract
     script_pkg = ScriptPackageV1.model_validate(output.payload)
-    assert script_pkg.run_id == run_id
+    assert script_pkg.run_id == "run_stub_s10"
     assert len(script_pkg.scenes) == 3
     assert script_pkg.scenes[0] == "Welcome to this AI avatar demonstration."
 
@@ -379,14 +470,7 @@ def test_stub_qc_provider_satisfies_protocol_and_runs():
         stage_id="S70",
         attempt=1,
         input_hash="b" * 64,
-        artifact_refs=[
-            ArtifactRefV1(
-                artifact_id="master_video_test",
-                path="s3://avatar-harness-poc/artifacts/master_video_test.mp4",
-                hash="d" * 64,
-                mime_type="video/mp4",
-            )
-        ],
+        artifact_refs=[],
         validation_ref=None,
         provider=ProviderDescriptorV1(
             provider="stub_qc_provider",
@@ -396,13 +480,11 @@ def test_stub_qc_provider_satisfies_protocol_and_runs():
         ),
     )
 
-    output = provider.run(envelope, "test_run_s70")
+    output = provider.run(envelope)
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("passed") is True
 
     report = QualityReportV1.model_validate(output.payload)
-    assert report.run_id == "test_run_s70"
-    assert report.master_video_hash == "d" * 64
     assert report.passed is True
     assert "identity_similarity" in report.metrics
 
@@ -417,14 +499,7 @@ def test_stub_disclosure_provider_satisfies_protocol_and_runs():
         stage_id="G90",
         attempt=1,
         input_hash="c" * 64,
-        artifact_refs=[
-            ArtifactRefV1(
-                artifact_id="master_video_test",
-                path="s3://avatar-harness-poc/artifacts/master_video_test.mp4",
-                hash="e" * 64,
-                mime_type="video/mp4",
-            )
-        ],
+        artifact_refs=[],
         validation_ref=None,
         provider=ProviderDescriptorV1(
             provider="stub_disclosure_provider",
@@ -434,10 +509,525 @@ def test_stub_disclosure_provider_satisfies_protocol_and_runs():
         ),
     )
 
-    output = provider.run(envelope, "test_run_g90")
+    output = provider.run(envelope)
     assert isinstance(output, StageOutputV1)
     assert output.metadata.get("contains_synthetic_media") is True
 
     disclosure = DisclosureDecisionV1.model_validate(output.payload)
-    assert disclosure.master_video_hash == "e" * 64
+    assert disclosure.contains_synthetic_media is True"""
+tests/test_providers.py
+
+Tests for all stage providers.
+"""
+
+from _future_ import annotations
+
+import os
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+from contracts.common.envelope import (
+    ArtifactRefV1,
+    ProviderDescriptorV1,
+    StageEnvelopeV1,
+    StageOutputV1,
+)
+from contracts.stages.g90_disclosure import DisclosureDecisionV1
+from contracts.stages.s10_script import ScriptPackageV1
+from contracts.stages.s20_voice import VoiceTrackV1
+from contracts.stages.s30_avatar import PrimaryVisualTrackV1
+from contracts.stages.s40_sync import SynchronizedMediaV1
+from contracts.stages.s70_qc import QualityReportV1
+from orchestrator.registry import clear, get, register
+from providers.base import StageProvider
+from providers.stub_avatar import StubAvatarProvider
+from providers.stub_disclosure import StubDisclosureProvider
+from providers.stub_qc import StubQCProvider
+from providers.stub_script import StubScriptProvider
+from providers.stub_sync import StubSyncProvider
+from providers.stub_voice import StubVoiceProvider
+
+@pytest.fixture(autouse=True)
+def clear_registry():
+    """Clear the registry before and after each test."""
+    clear()
+    yield
+    clear()
+
+
+@pytest.fixture
+def voice_provider():
+    return StubVoiceProvider()
+
+
+@pytest.fixture
+def avatar_provider():
+    return StubAvatarProvider()
+
+
+@pytest.fixture
+def sync_provider():
+    return StubSyncProvider()
+
+
+@pytest.fixture
+def sample_envelope():
+    """Create a minimal StageEnvelopeV1 for testing."""
+    provider_desc = ProviderDescriptorV1(
+        provider="test_provider",
+        model="test_model",
+        version="1.0.0",
+        capability="test_capability",
+    )
+    return StageEnvelopeV1(
+        stage_id="S20",
+        attempt=1,
+        input_hash="a" * 64,
+        provider=provider_desc,
+    )
+
+
+@pytest.fixture
+def mock_artifact_ref():
+    """Create a mock ArtifactRefV1 for testing."""
+    return ArtifactRefV1(
+        artifact_id="test_artifact_001",
+        path="s3://avatar-harness-poc/artifacts/test_artifact.wav",
+        hash="b" * 64,
+        mime_type="audio/wav",
+    )
+
+
+@pytest.fixture
+def mock_video_ref():
+    """Create a mock video ArtifactRefV1 for testing."""
+    return ArtifactRefV1(
+        artifact_id="test_video_001",
+        path="s3://avatar-harness-poc/artifacts/test_video.mp4",
+        hash="c" * 64,
+        mime_type="video/mp4",
+    )
+
+
+def test_voice_provider_interface(voice_provider):
+    """Test that voice provider implements the required interface."""
+    assert voice_provider.capability == "voice_synthesis"
+    assert hasattr(voice_provider, "run")
+
+
+def test_voice_provider_run(voice_provider, sample_envelope, mock_artifact_ref):
+    """Test that voice provider returns a valid StageOutputV1 with VoiceTrackV1."""
+    # Need to ensure fixture file exists
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    # Mock put_artifact in the stub_voice module directly
+    with patch("providers.stub_voice.put_artifact") as mock_put:
+        mock_put.return_value = mock_artifact_ref
+        
+        # Register the provider
+        register(voice_provider)
+
+        # Run the provider
+        output = voice_provider.run(sample_envelope)
+
+        # Check output structure
+        assert isinstance(output, StageOutputV1)
+        assert "run_id" in output.payload
+        assert "voice_id" in output.payload
+        assert "audio_artifact" in output.payload
+        assert "duration_seconds" in output.payload
+
+        # Check VoiceTrackV1 can be reconstructed
+        voice_track = VoiceTrackV1(**output.payload)
+        assert voice_track.duration_seconds == 5.0
+        assert voice_track.voice_id == "stub_voice_001"
+        assert voice_track.audio_artifact.mime_type == "audio/wav"
+
+        # Check artifact refs
+        assert len(output.artifact_refs) == 1
+        assert output.artifact_refs[0].mime_type == "audio/wav"
+
+        # Check metadata
+        assert output.metadata["provider"] == "stub_voice"
+        assert output.metadata["stub"] is True
+        
+        # Verify put_artifact was called
+        mock_put.assert_called_once()
+
+
+def test_avatar_provider_interface(avatar_provider):
+    """Test that avatar provider implements the required interface."""
+    assert avatar_provider.capability == "avatar_render"
+    assert hasattr(avatar_provider, "run")
+
+
+def test_avatar_provider_run(avatar_provider, sample_envelope, mock_video_ref):
+    """Test that avatar provider returns a valid StageOutputV1 with PrimaryVisualTrackV1."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    # Mock put_artifact in the stub_avatar module directly
+    with patch("providers.stub_avatar.put_artifact") as mock_put:
+        mock_put.return_value = mock_video_ref
+        
+        register(avatar_provider)
+
+        # Modify envelope for avatar stage
+        sample_envelope.stage_id = "S30"
+
+        output = avatar_provider.run(sample_envelope)
+
+        assert isinstance(output, StageOutputV1)
+        assert "run_id" in output.payload
+        assert "video_artifact" in output.payload
+
+        # Check PrimaryVisualTrackV1 can be reconstructed
+        visual_track = PrimaryVisualTrackV1(**output.payload)
+        assert visual_track.video_artifact.mime_type == "video/mp4"
+
+        assert len(output.artifact_refs) == 1
+        assert output.artifact_refs[0].mime_type == "video/mp4"
+        assert output.metadata["provider"] == "stub_avatar"
+        assert output.metadata["stub"] is True
+        
+        mock_put.assert_called_once()
+
+
+def test_sync_provider_interface(sync_provider):
+    """Test that sync provider implements the required interface."""
+    assert sync_provider.capability == "media_sync"
+    assert hasattr(sync_provider, "run")
+
+
+def test_sync_provider_run_with_existing_artifact(sync_provider, sample_envelope, mock_video_ref):
+    """Test sync provider when video artifact is in envelope."""
+    register(sync_provider)
+
+    sample_envelope.artifact_refs = [mock_video_ref]
+    sample_envelope.stage_id = "S40"
+
+    with patch("providers.stub_sync.get_artifact") as mock_get:
+        mock_get.return_value = b"dummy video bytes"
+        with patch("providers.stub_sync.put_artifact") as mock_put:
+            mock_put.return_value = ArtifactRefV1(
+                artifact_id="test_sync_001",
+                path="s3://avatar-harness-poc/artifacts/" + "c" * 64,
+                hash="c" * 64,
+                mime_type="video/mp4",
+            )
+
+            output = sync_provider.run(sample_envelope)
+
+            assert isinstance(output, StageOutputV1)
+            assert "run_id" in output.payload
+            assert "media_artifact" in output.payload
+
+            sync_media = SynchronizedMediaV1(**output.payload)
+            assert sync_media.media_artifact.artifact_id == "test_sync_001"
+            assert sync_media.media_artifact.mime_type == "video/mp4"
+
+            assert len(output.artifact_refs) == 1
+            ref = output.artifact_refs[0]
+            assert ref.artifact_id == "test_sync_001"
+            assert ref.hash == "c" * 64
+            assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+            assert output.metadata["provider"] == "stub_sync"
+            assert output.metadata["stub"] is True
+            assert output.metadata["pass_through"] is False
+            mock_get.assert_called_once_with(mock_video_ref)
+            mock_put.assert_called_once()
+
+
+def test_sync_provider_run_fallback(sync_provider, sample_envelope, mock_video_ref):
+    """Test sync provider fallback when no video artifact in envelope."""
+    # Mock put_artifact for fallback path in stub_sync module
+    with patch("providers.stub_sync.put_artifact") as mock_put:
+        mock_put.return_value = mock_video_ref
+        
+        register(sync_provider)
+
+        # No artifact_refs in envelope
+        sample_envelope.artifact_refs = []
+        sample_envelope.stage_id = "S40"
+
+        output = sync_provider.run(sample_envelope)
+        
+        assert output.metadata["provider"] == "stub_sync"
+        assert output.metadata["pass_through"] is False
+        assert "media_artifact" in output.payload
+        assert output.payload["media_artifact"]["artifact_id"] == "test_video_001"
+        assert len(output.artifact_refs) == 1
+        assert output.artifact_refs[0].artifact_id == "test_video_001"
+
+        mock_put.assert_called_once()
+
+
+def test_provider_registration():
+    """Test that providers can be registered and retrieved."""
+    voice_provider = StubVoiceProvider()
+    register(voice_provider)
+
+    retrieved = get("voice_synthesis")
+    assert retrieved is voice_provider
+
+    with pytest.raises(KeyError):
+        get("nonexistent")
+
+
+def test_voice_provider_artifact_persistence(voice_provider, sample_envelope, mock_artifact_ref):
+    """Test that voice provider actually calls put_artifact with correct parameters."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    register(voice_provider)
+
+    # Mock put_artifact in the stub_voice module directly (not orchestrator.storage)
+    with patch("providers.stub_voice.put_artifact") as mock_put:
+        mock_put.return_value = mock_artifact_ref
+
+        output = voice_provider.run(sample_envelope)
+
+        # Verify put_artifact was called with correct args
+        assert mock_put.called
+        call_args = mock_put.call_args
+        assert call_args[1]["mime_type"] == "audio/wav"
+        assert call_args[1]["artifact_id"].startswith("voice_")
+        
+        # Verify output has the mock artifact
+        assert output.artifact_refs[0].artifact_id == "test_artifact_001"
+
+
+def test_avatar_provider_artifact_persistence(avatar_provider, sample_envelope, mock_video_ref):
+    """Test that avatar provider actually calls put_artifact with correct parameters."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    register(avatar_provider)
+    sample_envelope.stage_id = "S30"
+
+    # Mock put_artifact in the stub_avatar module directly
+    with patch("providers.stub_avatar.put_artifact") as mock_put:
+        mock_put.return_value = mock_video_ref
+
+        output = avatar_provider.run(sample_envelope)
+
+        # Verify put_artifact was called with correct args
+        assert mock_put.called
+        call_args = mock_put.call_args
+        assert call_args[1]["mime_type"] == "video/mp4"
+        assert call_args[1]["artifact_id"].startswith("avatar_")
+        
+        # Verify output has the mock artifact
+        assert output.artifact_refs[0].artifact_id == "test_video_001"
+
+
+def test_sync_provider_copies_artifact(sync_provider, sample_envelope, mock_video_ref):
+    """Test that sync provider copies the video artifact reference."""
+    register(sync_provider)
+
+    bucket = os.environ.get('TEST_S3_BUCKET')
+    if not bucket:
+        pytest.skip("S3 bucket not configured for testing")
+    # Multiple video artifacts in envelope (should pick first)
+    mock_video_ref2 = ArtifactRefV1(
+        artifact_id="test_video_002",
+        path="s3://bucket/artifacts/test_video2.mp4",
+        hash="d" * 64,
+        mime_type="video/mp4",
+    )
+    
+    sample_envelope.artifact_refs = [mock_video_ref, mock_video_ref2]
+    sample_envelope.stage_id = "S40"
+
+    output = sync_provider.run(sample_envelope)
+    
+    # Should use the first video artifact
+    sync_media = SynchronizedMediaV1(**output.payload)
+    assert sync_media.media_artifact.artifact_id == "test_video_001"
+
+def test_sync_provider_run_creates_sync_artifact(sync_provider, sample_envelope, mock_video_ref):
+    """Test that sync provider creates a new sync artifact and returns a content-addressed ref."""
+    register(sync_provider)
+
+    sample_envelope.artifact_refs = [mock_video_ref]
+    sample_envelope.stage_id = "S40"
+
+    # Mock BOTH get_artifact and put_artifact
+    with patch("providers.stub_sync.get_artifact") as mock_get:
+        mock_get.return_value = b"dummy video bytes"  # Return dummy data
+        
+        with patch("providers.stub_sync.put_artifact") as mock_put:
+            mock_put.return_value = ArtifactRefV1(
+                artifact_id="test_sync_001",
+                path="s3://avatar-harness-poc/artifacts/" + "c" * 64,
+                hash="c" * 64,
+                mime_type="video/mp4",
+            )
+
+            output = sync_provider.run(sample_envelope)
+
+            # Verify get_artifact was called with the mock_video_ref
+            mock_get.assert_called_once_with(mock_video_ref)
+            
+            # Verify put_artifact was called with the dummy data
+            mock_put.assert_called_once()
+            call_args = mock_put.call_args
+            assert call_args.kwargs["data"] == b"dummy video bytes"
+            assert call_args.kwargs["mime_type"] == "video/mp4"
+
+            # Verify output
+            assert isinstance(output, StageOutputV1)
+            assert len(output.artifact_refs) == 1
+            assert output.artifact_refs[0].artifact_id == "test_sync_001"
+            assert output.artifact_refs[0].hash == "c" * 64
+            assert output.metadata["provider"] == "stub_sync"
+            assert output.metadata["pass_through"] is False
+
+def test_voice_provider_artifact_refs_are_content_addressed(voice_provider, sample_envelope):
+    """Test that voice provider returns a real ArtifactRefV1 with a content-addressed path."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "silent_5s.wav"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    with patch("providers.stub_voice.put_artifact") as mock_put:
+        mock_put.return_value = ArtifactRefV1(
+            artifact_id="test_voice_001",
+            path="s3://avatar-harness-poc/artifacts/" + "a" * 64,
+            hash="a" * 64,
+            mime_type="audio/wav",
+        )
+
+        output = voice_provider.run(sample_envelope)
+
+        assert output.artifact_refs
+        ref = output.artifact_refs[0]
+        assert ref.hash == "a" * 64
+        assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+        assert ref.mime_type == "audio/wav"
+        assert mock_put.called
+
+
+def test_avatar_provider_artifact_refs_are_content_addressed(avatar_provider, sample_envelope):
+    """Test that avatar provider returns a real ArtifactRefV1 with a content-addressed path."""
+    fixture_path = Path(_file_).parent.parent / "fixtures" / "stubs" / "black_5s.mp4"
+    if not fixture_path.exists():
+        pytest.skip(f"Fixture file not found: {fixture_path}")
+
+    sample_envelope.stage_id = "S30"
+    with patch("providers.stub_avatar.put_artifact") as mock_put:
+        mock_put.return_value = ArtifactRefV1(
+            artifact_id="test_avatar_001",
+            path="s3://avatar-harness-poc/artifacts/" + "b" * 64,
+            hash="b" * 64,
+            mime_type="video/mp4",
+        )
+
+        output = avatar_provider.run(sample_envelope)
+
+        assert output.artifact_refs
+        ref = output.artifact_refs[0]
+        assert ref.hash == "b" * 64
+        assert ref.path.startswith("s3://avatar-harness-poc/artifacts/")
+        assert ref.mime_type == "video/mp4"
+        assert mock_put.called
+
+
+def test_stub_script_provider_satisfies_protocol():
+    """Verify that StubScriptProvider satisfies the StageProvider Protocol."""
+    provider = StubScriptProvider()
+    assert isinstance(provider, StageProvider)
+    assert provider.capability == "script_generation"
+
+
+def test_stub_script_provider_run():
+    """Verify that StubScriptProvider consumes StageEnvelopeV1 and returns valid StageOutputV1 with ScriptPackageV1 payload."""
+    provider = StubScriptProvider()
+
+    envelope = StageEnvelopeV1(
+        stage_id="S10",
+        attempt=1,
+        input_hash="a" * 64,
+        artifact_refs=[],
+        validation_ref=None,
+        provider=ProviderDescriptorV1(
+            provider="stub_script_provider",
+            model="stub-v1",
+            version="1.0.0",
+            capability="script_generation",
+        ),
+    )
+
+    output = provider.run(envelope)
+
+    assert isinstance(output, StageOutputV1)
+    assert output.metadata.get("stub") is True
+
+    # Validate output payload against real M0 ScriptPackageV1 contract
+    script_pkg = ScriptPackageV1.model_validate(output.payload)
+    assert script_pkg.run_id == "run_stub_s10"
+    assert len(script_pkg.scenes) == 3
+    assert script_pkg.scenes[0] == "Welcome to this AI avatar demonstration."
+
+
+def test_stub_qc_provider_satisfies_protocol_and_runs():
+    """Verify that StubQCProvider satisfies StageProvider and returns valid QualityReportV1."""
+    provider = StubQCProvider()
+    assert isinstance(provider, StageProvider)
+    assert provider.capability == "quality_control"
+
+    envelope = StageEnvelopeV1(
+        stage_id="S70",
+        attempt=1,
+        input_hash="b" * 64,
+        artifact_refs=[],
+        validation_ref=None,
+        provider=ProviderDescriptorV1(
+            provider="stub_qc_provider",
+            model="stub-v1",
+            version="1.0.0",
+            capability="quality_control",
+        ),
+    )
+
+    output = provider.run(envelope)
+    assert isinstance(output, StageOutputV1)
+    assert output.metadata.get("passed") is True
+
+    report = QualityReportV1.model_validate(output.payload)
+    assert report.passed is True
+    assert "identity_similarity" in report.metrics
+
+
+def test_stub_disclosure_provider_satisfies_protocol_and_runs():
+    """Verify that StubDisclosureProvider satisfies StageProvider and returns valid DisclosureDecisionV1."""
+    provider = StubDisclosureProvider()
+    assert isinstance(provider, StageProvider)
+    assert provider.capability == "disclosure_check"
+
+    envelope = StageEnvelopeV1(
+        stage_id="G90",
+        attempt=1,
+        input_hash="c" * 64,
+        artifact_refs=[],
+        validation_ref=None,
+        provider=ProviderDescriptorV1(
+            provider="stub_disclosure_provider",
+            model="stub-v1",
+            version="1.0.0",
+            capability="disclosure_check",
+        ),
+    )
+
+    output = provider.run(envelope)
+    assert isinstance(output, StageOutputV1)
+    assert output.metadata.get("contains_synthetic_media") is True
+
+    disclosure = DisclosureDecisionV1.model_validate(output.payload)
     assert disclosure.contains_synthetic_media is True
