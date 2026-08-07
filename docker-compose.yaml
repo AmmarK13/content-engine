@@ -13,6 +13,7 @@ services:
       - ./sql/create_manifest_stage_records.sql:/docker-entrypoint-initdb.d/02-manifest.sql
       - ./sql/create_stage_run_records.sql:/docker-entrypoint-initdb.d/03-telemetry.sql
       - ./sql/create_registry_profiles.sql:/docker-entrypoint-initdb.d/04-registry.sql
+      
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U temporal"]
       interval: 5s
