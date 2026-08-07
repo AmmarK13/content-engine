@@ -1,1 +1,0 @@
-CREATE DATABASE content_engine;
