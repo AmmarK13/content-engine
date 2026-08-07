@@ -5,16 +5,16 @@ services:
     environment:
       POSTGRES_USER: temporal
       POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: content_engine
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
-      - ./sql/create_manifest_stage_records.sql:/docker-entrypoint-initdb.d/02-manifest.sql
-      - ./sql/create_stage_run_records.sql:/docker-entrypoint-initdb.d/03-telemetry.sql
-      - ./sql/create_registry_profiles.sql:/docker-entrypoint-initdb.d/04-registry.sql
+      - ./sql/create_manifest_stage_records.sql:/docker-entrypoint-initdb.d/02-manifest.sql:ro
+      - ./sql/create_stage_run_records.sql:/docker-entrypoint-initdb.d/03-telemetry.sql:ro
+      - ./sql/create_registry_profiles.sql:/docker-entrypoint-initdb.d/04-registry.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      test: ["CMD-SHELL", "pg_isready -U temporal -d content_engine"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -26,11 +26,11 @@ services:
       postgresql:
         condition: service_healthy
     environment:
-      - DB=postgres12
-      - DB_PORT=5432
-      - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
-      - POSTGRES_SEEDS=postgresql
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: postgresql
     ports:
       - "7233:7233"
 
@@ -40,7 +40,7 @@ services:
     depends_on:
       - temporal
     environment:
-      - TEMPORAL_ADDRESS=temporal:7233
+      TEMPORAL_ADDRESS: temporal:7233
     ports:
       - "8080:8080"
 
