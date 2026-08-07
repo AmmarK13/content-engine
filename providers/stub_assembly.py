@@ -1,19 +1,22 @@
 """
 providers/stub_assembly.py
-S60 Assembly Stub Provider.
-Produces a deterministic MasterVideoV1 payload using a pre-generated
-black-screen video fixture, persists it as a real artifact through
-storage.py, and records a PASSED stage entry in the production manifest.
+S60 Assembly Provider.
+Fetches real S20 audio and S40 video artifacts from the envelope,
+muxes them via ffmpeg into a single output file, measures duration
+via ffprobe, and stores the result as the master video artifact.
+Falls back to the black_5s.mp4 fixture if real artifacts are missing
+or ffmpeg is unavailable.
 """
 import json
 import os
 import subprocess
 import tempfile
 from pathlib import Path
+
 from contracts.common.envelope import StageEnvelopeV1, StageOutputV1
 from contracts.stages.idea_request import Modality
 from contracts.stages.s60_assembly import MasterVideoV1
-from orchestrator.storage import put_artifact
+from orchestrator.storage import get_artifact, put_artifact
 
 FIXTURE_VIDEO = Path("fixtures") / "stubs" / "black_5s.mp4"
 
@@ -32,18 +35,67 @@ def _measure_duration(video_bytes: bytes) -> float:
         duration = float(data["streams"][0].get("duration", 5.0))
         return duration
     except Exception:
-        return 5.0  # fallback if ffprobe unavailable
+        return 5.0
     finally:
         os.unlink(tmp_path)
 
 
+def _mux(audio_bytes: bytes, video_bytes: bytes) -> bytes:
+    """Mux audio + video into one mp4 via ffmpeg. Returns muxed bytes."""
+    with tempfile.TemporaryDirectory() as tmp:
+        audio_path = os.path.join(tmp, "audio.wav")
+        video_path = os.path.join(tmp, "video.mp4")
+        out_path = os.path.join(tmp, "output.mp4")
+
+        with open(audio_path, "wb") as f:
+            f.write(audio_bytes)
+        with open(video_path, "wb") as f:
+            f.write(video_bytes)
+
+        result = subprocess.run(
+            [
+                "ffmpeg", "-y",
+                "-i", video_path,
+                "-i", audio_path,
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-shortest",
+                out_path,
+            ],
+            capture_output=True, timeout=60
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"ffmpeg failed: {result.stderr.decode()}")
+
+        with open(out_path, "rb") as f:
+            return f.read()
+
+
 class StubAssemblyProvider:
-    """Stub implementation for S60 assembly capability."""
+    """S60 assembly — real ffmpeg mux when S20/S40 artifacts present, fixture fallback otherwise."""
     capability: str = "assembly"
 
     def run(self, envelope: StageEnvelopeV1, run_id: str) -> StageOutputV1:
+        # Find audio (S20) and video (S40) artifacts
+        audio_ref = None
+        video_ref = None
+        for ref in envelope.artifact_refs:
+            if ref.mime_type and ref.mime_type.startswith("audio/") and audio_ref is None:
+                audio_ref = ref
+            if ref.mime_type and ref.mime_type.startswith("video/") and video_ref is None:
+                video_ref = ref
 
-        video_bytes = FIXTURE_VIDEO.read_bytes()
+        stub = False
+        try:
+            if audio_ref is None or video_ref is None:
+                raise ValueError("Missing S20 audio or S40 video artifact — falling back to fixture")
+            audio_bytes = get_artifact(audio_ref)
+            video_bytes = get_artifact(video_ref)
+            video_bytes = _mux(audio_bytes, video_bytes)
+        except Exception as e:
+            print(f"[assembly] falling back to fixture: {e}")
+            video_bytes = FIXTURE_VIDEO.read_bytes()
+            stub = True
 
         artifact = put_artifact(
             data=video_bytes,
@@ -64,7 +116,7 @@ class StubAssemblyProvider:
         return StageOutputV1(
             payload=master_video.model_dump(mode="json"),
             metadata={
-                "stub": True,
+                "stub": stub,
                 "provider": "stub_assembly_provider",
                 "scene_count": master_video.scene_count,
                 "duration_seconds": master_video.duration_seconds,
