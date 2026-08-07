@@ -17,6 +17,10 @@ from orchestrator.pipeline import TASK_QUEUE, AvatarPipeline
 from orchestrator.registry import register_all_stubs, try_register_real_providers
 from orchestrator.activities import run_stage, record_g80_approval, run_intake_stage
 from orchestrator.consent_gate import validate_run
+from orchestrator.manifest_store import get_connection
+from contracts.stages.g80_approval import ApprovalDecision, HumanApprovalV1
+from datetime import datetime, timezone
+from orchestrator.manifest_store import get_connection
 
 
 TEMPORAL_HOST = "localhost:7233"
@@ -45,7 +49,7 @@ def _run_worker():
 
 # ── Pipeline trigger ──────────────────────────────────────────────────────────
 
-async def _start_pipeline(idea: IdeaRequestV1) -> str:
+async def _start_pipeline(idea: IdeaRequestV1) -> tuple[Client,str]:
     client = await Client.connect(TEMPORAL_HOST)
     handle = await client.start_workflow(
         AvatarPipeline.run,
@@ -53,14 +57,14 @@ async def _start_pipeline(idea: IdeaRequestV1) -> str:
         id=f"pipeline-{idea.idea_request_id}",
         task_queue=TASK_QUEUE,
     )
-    return handle.id
+    return client, handle.id
 
 
 # ── Wait for G80 ──────────────────────────────────────────────────────────────
 
 async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
     """Poll manifest until S00-S70 all passed, meaning pipeline is at G80."""
-    from orchestrator.manifest_store import get_connection
+   
 
     print("[pipeline] Waiting for stages S00→S70 to complete...")
     deadline = time.time() + timeout
@@ -85,11 +89,10 @@ async def _wait_for_g80(run_id: str, timeout: int = 120) -> str:
 
 
 # ── Approve ───────────────────────────────────────────────────────────────────
+# for real pipeline we would probably need to pass the real hash and fail 
+# if its not present -- note
+async def _approve(client:Client,workflow_id: str, run_id: str):
 
-async def _approve(workflow_id: str, run_id: str):
-    from contracts.stages.g80_approval import ApprovalDecision, HumanApprovalV1
-    from datetime import datetime, timezone
-    from orchestrator.manifest_store import get_connection
 
     master_hash = None
     try:
@@ -118,8 +121,6 @@ async def _approve(workflow_id: str, run_id: str):
         timestamp=datetime.now(timezone.utc),
         comments="Auto-approved via avatar-harness CLI",
     )
-
-    client = await Client.connect(TEMPORAL_HOST)
     handle = client.get_workflow_handle(workflow_id)
     await handle.signal("approve", approval.model_dump(mode="json"))
     print("[approve] HumanApprovalV1 signal sent ✓")
@@ -127,7 +128,7 @@ async def _approve(workflow_id: str, run_id: str):
 
 # ── Wait for completion ────────────────────────────────────────────────────────
 
-async def _wait_for_completion(workflow_id: str, timeout: int = 60) -> dict:
+async def _wait_for_completion(client:Client,workflow_id: str, timeout: int = 60) -> dict:
     """
     Wait for the workflow to finish and return its final result dict.
 
@@ -137,7 +138,6 @@ async def _wait_for_completion(workflow_id: str, timeout: int = 60) -> dict:
     AvatarPipeline.run() returning both G90 and S100's payloads, not just
     S100's — is what makes the real content check possible.
     """
-    client = await Client.connect(TEMPORAL_HOST)
     handle = client.get_workflow_handle(workflow_id)
     print("[pipeline] Waiting for G90 + S100 to complete...")
     result = await asyncio.wait_for(handle.result(), timeout=timeout)
@@ -158,9 +158,6 @@ def _verify(run_id: str, privacy: str, workflow_result: dict | None = None):
         print(f"✗ Could not load manifest: {e}")
         sys.exit(1)
 
-    # Dynamic total instead of the old hardcoded 10/11. S00 now runs through
-    # its own activity (Part 1) and correctly gets its own manifest row, so
-    # the pre-fix hardcoded denominators undercounted by one.
     total_stages = len(manifest.stages)
 
     passed = 0
@@ -173,8 +170,7 @@ def _verify(run_id: str, privacy: str, workflow_result: dict | None = None):
         if status == "passed":
             passed += 1
 
-    # G80's manifest row is already counted in the loop above — it isn't a
-    # separate +1 on top of `passed`, that was double-counting it.
+
     checkpoint_count = passed
 
     # ── Real content checks (Part 2) ────────────────────────────────────────
@@ -278,26 +274,23 @@ def main():
     print(f"  privacy:  {args.privacy}")
     print(f"{'='*60}\n")
 
-    # Start worker in background daemon thread
+  
     worker_thread = threading.Thread(target=_run_worker, daemon=True)
     worker_thread.start()
-    time.sleep(2)  # give worker time to connect
+    time.sleep(2) 
 
-    # Start pipeline
-    workflow_id = asyncio.run(_start_pipeline(idea))
+    client,workflow_id = asyncio.run(_start_pipeline(idea))
     print(f"[pipeline] Started workflow: {workflow_id}")
     print(f"[pipeline] Monitor: http://localhost:8080/namespaces/default/workflows/{workflow_id}")
 
-    # Wait for G80
     asyncio.run(_wait_for_g80(run_id))
 
-    # Approve
-    asyncio.run(_approve(workflow_id, run_id))
+    asyncio.run(_approve(client,workflow_id, run_id))
 
-    # Wait for completion — now captures the real result
+
     workflow_result = asyncio.run(_wait_for_completion(workflow_id))
 
-    # Verify
+    
     _verify(run_id, args.privacy, workflow_result)
 
 

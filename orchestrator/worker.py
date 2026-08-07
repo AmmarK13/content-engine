@@ -15,16 +15,14 @@ from orchestrator.hello_workflow import HelloWorkflow, say_hello, TASK_QUEUE
 from orchestrator.pipeline import AvatarPipeline
 from orchestrator.activities import run_stage
 
-# Import and register all stub providers so the registry is populated
-# before the worker starts accepting work.
+
 from orchestrator.registry import register
 
 from orchestrator.activities import run_stage, record_g80_approval,run_intake_stage
 from orchestrator.pipeline import AvatarPipeline, TASK_QUEUE
 from orchestrator.registry import register_all_stubs, try_register_real_providers
 
-# Register stubs - add more here as other team members' stubs land
-#register(StubScriptProvider())  removing it from here since reigster stub call all. 
+
 import logging
 logging.basicConfig(
     level=logging.INFO,
